@@ -1,0 +1,10 @@
+presentation/*
+!presentation/source/
+!presentation/fikz.sty
+!presentation/main.tex
+!presentation/poly.sty
+!presentation/xgames.sty
+
+report/*
+
+.DS_Store
