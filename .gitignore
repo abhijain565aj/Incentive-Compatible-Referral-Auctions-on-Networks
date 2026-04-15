@@ -5,6 +5,8 @@ presentation/*
 !presentation/poly.sty
 !presentation/xgames.sty
 
+*/report/*
+!*report/report.tex
 report/*
 !report/report.tex
 
@@ -12,6 +14,9 @@ final_report/*
 
 simulator/results/*
 __pycache__/
+
+*.png
+*.csv
 
 .DS_Store
 *.zip
