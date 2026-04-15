@@ -1,0 +1,439 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs,longtable,array,tabularx}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{microtype}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{listings}
+
+\definecolor{accent}{HTML}{1F4E79}
+\definecolor{soft}{HTML}{EEF5FB}
+\definecolor{dark}{HTML}{1F2937}
+\hypersetup{colorlinks=true,linkcolor=accent,citecolor=accent,urlcolor=accent}
+\titleformat{\section}{\Large\bfseries\color{accent}}{\thesection}{0.7em}{}
+\titleformat{\subsection}{\large\bfseries\color{dark}}{\thesubsection}{0.7em}{}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Referral Auctions on Networks}
+\rhead{Abhi Jain, Harshit Raj, Ridam Jan}
+\cfoot{\thepage/\pageref{LastPage}}
+
+\newtheorem{definition}{Definition}
+\newtheorem{proposition}{Proposition}
+\newtheorem{researchq}{Research Question}
+\newtheorem{conjecture}{Conjecture}
+
+\newcommand{\N}{\mathcal{N}}
+\newcommand{\A}{\mathcal{A}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\argmax}{\operatorname*{arg\,max}}
+\newcommand{\Rev}{\operatorname{Rev}}
+\newcommand{\SW}{\operatorname{SW}}
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \vspace*{1.3cm}
+    {\Huge \bfseries Incentive-Compatible Referral Auctions on Networks\\[0.2cm]}
+    {\Large A Theory-First Project Report and Experiment Plan\\[0.8cm]}
+    \vspace{0.5cm}
+    \begin{tabular}{rl}
+        Team: & Abhi Jain (23b0903), Harshit Raj (23b0950), Ridam Jan (23b1049)\\
+        Theme: & Mechanism design in social networks and referral auctions\\
+        Main base paper: & Li, Hao, Zhao, Zhou, \emph{Mechanism Design in Social Networks}\\
+    \end{tabular}
+    \vfill
+    \fbox{\begin{minipage}{0.86\textwidth}
+    \textbf{Core research stance.} We do not treat the project as simply implementing known mechanisms. The implementation is a controlled environment for testing theoretical hypotheses around robustness, non-i.i.d. values, topology, and reward/revenue tradeoffs. The strongest candidate contribution is a small theorem or counterexample in one restricted but nontrivial setting, supported by systematic simulations.
+    \end{minipage}}
+    \vfill
+    {\large \today}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+\section{Executive Summary}
+
+Classical auction theory assumes that the seller can directly reach all bidders. Diffusion auctions change the model: the seller initially reaches only her neighbours in a social network, and informed agents strategically decide whether to invite their neighbours. This creates a conflict: the seller wants diffusion, while a bidder may lose the item if she invites a stronger competitor.
+
+The first mechanism in the area, the Information Diffusion Mechanism (IDM) of Li et al.~\cite{li2017mdsn}, uses diffusion-critical nodes to reward useful propagation. Its central message is simple but deep: efficiency, incentive compatibility, and seller revenue cannot all be obtained by a naive extension of VCG. Network-VCG is diffusion incentive-compatible but may run a deficit; IDM restores nonnegative revenue by sacrificing some allocation efficiency.
+
+Recent work extends this in many directions: multi-item sales~\cite{zhao2018multi}, redistribution~\cite{zhang2020redistribution,gu2023redistribution}, fair rewards~\cite{zhang2020fair}, transaction costs~\cite{li2024cost}, privacy~\cite{jia2023dp}, Sybil attacks~\cite{chen2023sybil}, and Myerson-style optimal referral auctions~\cite{bhattacharyya2024optimal}. The most attractive open-ish direction for this course project is not to reprove these papers, but to study a narrow, credible gap:
+
+\begin{quote}
+\textbf{How robust are revenue-optimal or high-revenue referral auctions when the i.i.d. valuation assumption is relaxed, especially on trees or nearly-tree-like networks?}
+\end{quote}
+
+This is promising because Bhattacharyya et al.~explicitly obtain revenue-optimal structure for i.i.d. bidders and state that the non-i.i.d. setting is far less structured. It is also implementable: we can compare IDM, network-VCG, local Vickrey, and tunable referral mechanisms under controlled topology and valuation models.
+
+\section{Model}
+
+Let $G=(V,E)$ be a graph with seller $s\in V$ and buyers $N=V\setminus\{s\}$. Buyer $i$ has private value $v_i\ge 0$ for a single item. The seller initially informs only $r_s$, her neighbours. A buyer who receives the information submits two reports:
+\[
+    a_i=(b_i,r_i'), \qquad r_i'\subseteq r_i,
+\]
+where $b_i$ is her bid and $r_i'$ is the set of neighbours she invites.
+
+An action profile induces a directed invitation graph. A buyer participates only if she is reachable from $s$ in this invitation graph. A mechanism $M=(\pi,p)$ chooses an allocation $\pi_i(a)\in\{0,1\}$ and a payment $p_i(a)\in\R$. Positive $p_i$ means buyer $i$ pays the seller; negative $p_i$ means buyer $i$ is rewarded.
+
+\begin{definition}[Individual rationality]
+A mechanism is individually rational (IR) if every buyer obtains nonnegative utility when she reports her value truthfully, irrespective of the actions of others.
+\end{definition}
+
+\begin{definition}[Diffusion incentive compatibility]
+A mechanism is diffusion incentive-compatible (DIC) if for every buyer, reporting the true value and inviting all neighbours is a dominant strategy.
+\end{definition}
+
+\begin{definition}[Weak budget balance]
+A mechanism is weakly budget balanced (WBB) if
+\[
+    \Rev(M,a)=\sum_{i\in N}p_i(a)\ge 0
+\]
+for every feasible action profile $a$.
+\end{definition}
+
+\subsection{Diffusion-critical sets}
+
+Given a feasible invitation graph and a participant $j$, buyer $i$ is a diffusion-critical node of $j$ if every directed path from $s$ to $j$ passes through $i$. Define
+\[
+    d_i=\{i\}\cup \{j: i\text{ is diffusion-critical for }j\}.
+\]
+The diffusion-critical sequence $C_m$ of a buyer $m$ is the ordered chain of critical nodes of $m$, followed by $m$ itself. This sequence is the central combinatorial object in IDM.
+
+\section{Known Mechanisms and What They Teach}
+
+\subsection{Central Vickrey auction}
+
+If all bidders are known, the seller allocates to the highest bidder and charges the second-highest bid. This is truthful and efficient, but it is not a network mechanism: it ignores the information propagation problem.
+
+\subsection{Local Vickrey auction without diffusion incentives}
+
+The seller runs a second-price auction only among $r_s$. This is safe but local. It can miss high-value buyers deeper in the network, so welfare and revenue can be much smaller than what would be possible after diffusion.
+
+\subsection{Network VCG}
+
+Network VCG allocates to the highest reachable bidder. The payment of buyer $i$ is the externality she imposes:
+\[
+    p_i^{VCG}=W(a_{-d_i})-\left(W(a)-\pi_i(a)b_i\right).
+\]
+For a single item, $W(a)$ is the maximum bid among participants. The key issue is that a critical ancestor of the winner may receive a reward equal to the welfare she enables. On a line graph where only the last node has value $1$, every intermediate node must be rewarded, so the seller revenue becomes negative.
+
+\begin{proposition}[Known]
+Network VCG is IR and diffusion incentive-compatible, but it is not weakly budget balanced.
+\end{proposition}
+
+\subsection{Information Diffusion Mechanism}
+
+Let $m$ be the highest bidder and $C_m=(c_1,c_2,\ldots,m)$ be its diffusion-critical sequence. IDM allocates to the first node $c_t$ on this sequence whose bid is high enough to win after the next critical descendant block is removed; otherwise $m$ wins. If $w$ wins, then for $i\in C_w\setminus\{w\}$,
+\[
+    p_i^{IDM}=v^*_{-d_i}-v^*_{-d_{i+1}},
+\]
+and the winner pays
+\[
+    p_w^{IDM}=v^*_{-d_w}.
+\]
+Since $d_i\supseteq d_{i+1}$, the on-path payments are nonpositive, i.e., rewards.
+
+\begin{proposition}[Known]
+IDM is IR, diffusion incentive-compatible, and weakly budget balanced. Its revenue is always at least the revenue of network VCG.
+\end{proposition}
+
+\subsection{Critical Diffusion Mechanisms and later variants}
+
+Later work generalizes IDM into broader classes of diffusion mechanisms. The high-level pattern is: give earlier critical nodes priority, compensate them when their diffusion causes them to lose, and choose payments through critical thresholds. This opens a design space where one can trade efficiency, revenue, reward fairness, privacy, and robustness.
+
+\section{Literature Map}
+
+\begin{longtable}{p{0.19\textwidth}p{0.25\textwidth}p{0.24\textwidth}p{0.22\textwidth}}
+\toprule
+\textbf{Paper} & \textbf{Main contribution} & \textbf{Assumptions} & \textbf{Project-relevant gap}\\
+\midrule
+Li et al. 2017 / 2022~\cite{li2017mdsn,li2022diffusion} & Introduces diffusion auction model, network VCG, IDM, and critical diffusion mechanisms. & Single item, social graph, no diffusion cost, standard quasilinear utilities. & IDM is robust and implementable, but does not target prior-dependent revenue optimality and can sacrifice efficiency.\\
+\addlinespace
+Zhao et al. 2018~\cite{zhao2018multi} & Multiple units via social networks. & Homogeneous multiple items. & Multi-item version is too large for this project, but useful for future extension.\\
+\addlinespace
+Zhang et al. 2020 redistribution~\cite{zhang2020redistribution} & Redistribution mechanism on networks; shows direct redistribution is hard in network settings. & Resource allocation with network invitations. & Connects diffusion auctions to budget redistribution; can inspire reward smoothing.\\
+\addlinespace
+Zhang et al. 2020 fair rewards~\cite{zhang2020fair} & Rewards weak as well as strong critical ancestors. & Single item, no diffusion costs. & Fairness-revenue frontier remains a good experimental and theoretical target.\\
+\addlinespace
+Bhattacharyya et al. 2024~\cite{bhattacharyya2024optimal} & Myerson-like characterization; revenue-optimal referral auction for i.i.d. bidders. & Referral auction class, i.i.d. MHR/regular style assumptions. & Non-i.i.d. case is explicitly challenging; promising main direction.\\
+\addlinespace
+Li et al. 2024 transaction costs~\cite{li2024cost} & Adds transaction costs to diffusion auction design. & Cost model for information propagation. & Private heterogeneous edge costs plus non-i.i.d. values are still a hard mixed setting.\\
+\addlinespace
+Jia et al. 2023~\cite{jia2023dp} & Differentially private diffusion mechanisms. & Single item, privacy constraints. & Privacy adds noise; interaction with optimal referral rewards is open-ish and experimentally testable.\\
+\addlinespace
+Chen et al. 2023~\cite{chen2023sybil} & Sybil-proof diffusion auctions. & Fake identities allowed. & Strong impossibilities suggest restricted graph classes or approximate goals.\\
+\addlinespace
+Gu et al. 2023~\cite{gu2023redistribution} & Black-box redistribution framework for truthful diffusion auctions. & Single item, truthful base auction. & Could be combined with non-i.i.d. revenue tuning.\\
+\bottomrule
+\end{longtable}
+
+\section{Most Promising Research Direction}
+
+\subsection{Main direction: non-i.i.d. robust referral auctions}
+
+Bhattacharyya et al.~develop a Myerson-like viewpoint for referral auctions and obtain revenue-optimal structure for i.i.d. bidders. Their own discussion indicates that moving away from i.i.d. values makes revenue maximization much less structured; in particular, known reductions to threshold auctions may not capture all optimal diffusion auctions.
+
+\begin{researchq}[Non-i.i.d. robustness]
+For tree networks with independent but non-identical value distributions, can we characterize a small class of diffusion incentive-compatible mechanisms that strictly dominate IDM in expected revenue while preserving IR and WBB?
+\end{researchq}
+
+A realistic course-project version should restrict the graph family. The most tractable choices are:
+\begin{enumerate}[itemsep=0.25em]
+    \item a path graph,
+    \item a rooted tree of height two,
+    \item a balanced binary tree with depth-biased value distributions,
+    \item a tree plus a small number of cross edges.
+\end{enumerate}
+
+The central reason this is promising is that a path or tree preserves enough structure to write threshold conditions, while non-i.i.d. valuations already move beyond the solved i.i.d. optimal-referral theorem.
+
+\subsection{Candidate theorem target}
+
+Consider a rooted path $s-1-2-\cdots-k$ where bidder $i$ has distribution $F_i$. Let a mechanism be \emph{path-threshold referral} if allocation is determined by node-specific monotone thresholds and rewards are paid only to ancestors of the winner.
+
+\begin{conjecture}[Path threshold sufficiency under regularity]
+For independent regular distributions on a path, among path-threshold referral mechanisms satisfying IR, DIC, and WBB, expected revenue maximization reduces to optimizing monotone virtual thresholds along the path.
+\end{conjecture}
+
+This is not claiming global optimality over all diffusion auctions. It is a deliberately narrow statement. A successful project can either prove the conjecture for $k=2$ or $k=3$, or find a counterexample. Either result is meaningful.
+
+\subsection{Why a counterexample would still be valuable}
+
+In mechanism design projects, a clean impossibility or counterexample is often better than an unproven broad claim. A useful counterexample would show that a natural Myerson-style threshold rule fails under one of:
+\begin{enumerate}[itemsep=0.25em]
+    \item non-identical distributions,
+    \item non-regular distributions,
+    \item topology asymmetry,
+    \item reward fairness constraints,
+    \item private diffusion costs.
+\end{enumerate}
+
+\section{Other Theory Directions}
+
+\subsection{Fairness-revenue frontier}
+
+IDM rewards only strong critical ancestors. Fair Diffusion Mechanism argues that weak critical ancestors also contribute to connecting the winner. This suggests a constrained optimization problem:
+\[
+    \max_M \; \mathbb{E}[\Rev(M)] \quad\text{s.t.}\quad M\text{ is IR, DIC, WBB, and }\Phi(M)\le \tau,
+\]
+where $\Phi(M)$ is a reward inequality measure such as Gini coefficient or max-min reward gap among contributing nodes.
+
+\begin{researchq}[Reward fairness]
+Can one design a family of mechanisms interpolating between IDM-style revenue and FDM-style fairness, while preserving DIC and WBB on trees?
+\end{researchq}
+
+A possible small theorem is to show that any reward to a weak critical ancestor must be funded by reducing either seller revenue or strong-ancestor reward, unless the allocation rule changes.
+
+\subsection{Private diffusion costs}
+
+If inviting neighbours has cost, then ``invite all neighbours'' is no longer free. The literature has begun studying transaction costs, but a hard extension is where each edge cost is private and heterogeneous.
+
+\begin{researchq}[Private edge costs]
+Suppose buyer $i$ incurs private cost $c_{ij}$ for inviting neighbour $j$. Can any deterministic single-item mechanism be IR, DIC in values and invitations, WBB, and guarantee revenue at least local Vickrey for all cost profiles?
+\end{researchq}
+
+A likely outcome is an impossibility theorem. Even a two-hop path can be enough: to make node $1$ invite node $2$, the mechanism may need to compensate node $1$ for both competitive loss and invitation cost. If the seller must remain WBB for all values, compensation may be impossible when the downstream value is low.
+
+\subsection{Topology-sensitive efficiency loss}
+
+IDM's welfare loss is caused by priority along the critical sequence. In dense graphs, critical ancestors are rarer; in tree-like graphs, they are common. This suggests a graph-theoretic bound.
+
+\begin{researchq}[Topology bound]
+Can the welfare loss of IDM relative to central Vickrey be bounded using the length of the highest bidder's critical sequence, articulation structure, or dominator-tree depth?
+\end{researchq}
+
+A concrete claim to test:
+\[
+    \frac{\SW(IDM)}{\SW(Central)} \ge f(L),
+\]
+where $L$ is the length of the diffusion-critical sequence of the global highest bidder. The worst-case bound may be zero, but average-case bounds under random graphs may be informative.
+
+\subsection{Sybil robustness under restricted networks}
+
+Sybil-proof diffusion auctions have strong impossibility phenomena. A smaller project direction is to restrict the graph model: for example, verified institutional networks, bounded-degree trees, or networks where fake identities cannot create arbitrary new edges.
+
+\begin{researchq}[Restricted Sybil model]
+On rooted trees where a Sybil attack can only subdivide existing edges, can we design a mechanism that preserves a constant fraction of IDM revenue while being Sybil-proof?
+\end{researchq}
+
+This is likely too ambitious as the main project, but it is a strong backup discussion point.
+
+\section{Proposed Project Plan}
+
+\subsection{Minimum publishable-style goal for the course}
+
+The project should aim for one of the following outcomes:
+\begin{enumerate}[label=\textbf{G\arabic*.},itemsep=0.35em]
+    \item \textbf{A theorem in a restricted model.} Example: characterize optimal path-threshold referral auctions for a two-level tree with independent non-identical regular distributions.
+    \item \textbf{A counterexample.} Example: show that a natural extension of i.i.d. optimal referral auctions fails monotonicity or WBB under non-i.i.d. distributions.
+    \item \textbf{A robust experimental negative result.} Example: show that revenue gains of tuned referral mechanisms are highly topology-dependent and vanish on dense graphs or under costly diffusion.
+\end{enumerate}
+
+\subsection{Experiment design}
+
+The simulator should compare mechanisms under the following axes:
+\begin{itemize}[itemsep=0.25em]
+    \item \textbf{Topologies:} line, star, balanced tree, Erdos-Renyi, Barabasi-Albert.
+    \item \textbf{Valuations:} i.i.d. uniform, lognormal, depth-biased non-i.i.d., community-biased non-i.i.d.
+    \item \textbf{Diffusion behavior:} full diffusion, no diffusion, probabilistic diffusion, custom strategic withholding.
+    \item \textbf{Metrics:} seller revenue, welfare, participation count, diffusion depth, reward inequality, deficit probability.
+\end{itemize}
+
+\subsection{Mechanisms implemented in the accompanying simulator}
+
+The code package implements:
+\begin{enumerate}[itemsep=0.25em]
+    \item central Vickrey auction,
+    \item local Vickrey auction,
+    \item network VCG,
+    \item IDM,
+    \item a tunable referral-auction sandbox with node-specific reserves and referral-share rewards.
+\end{enumerate}
+
+The fifth mechanism is intentionally labelled a sandbox, not a theorem-level mechanism. It is useful for searching for patterns and counterexamples under non-i.i.d. distributions.
+
+\section{Expected Claims and How to Validate Them}
+
+\subsection{Claim 1: VCG deficit on sparse chains}
+
+On a path $s-1-\cdots-k$ with $v_k=1$ and all other values $0$, network VCG allocates to $k$ and rewards every intermediate critical node. Seller revenue is negative. The simulator includes this as a unit test.
+
+\subsection{Claim 2: IDM protects seller revenue}
+
+On the same path, IDM remains weakly budget balanced. This should be tested across random values and random trees.
+
+\subsection{Claim 3: non-i.i.d. values create room for prior-dependent mechanisms}
+
+If deeper bidders are stochastically stronger, local Vickrey loses welfare, while IDM may still allocate to an ancestor because of critical-sequence priority. A prior-aware referral mechanism with node-specific reserves may improve expected revenue, but it must be checked against DIC/WBB constraints before being presented as a mechanism theorem.
+
+\subsection{Claim 4: dense graphs reduce critical rewards}
+
+In dense graphs, many buyers have multiple paths from the seller; hence fewer nodes are diffusion-critical. We expect network VCG deficits and IDM rewards to be smaller in dense random graphs than in trees or paths.
+
+\section{Suggested Final Report Structure}
+
+For the final submission, use the following structure:
+\begin{enumerate}[itemsep=0.25em]
+    \item Problem definition and motivation.
+    \item Formal model and definitions: IR, DIC, WBB, diffusion-critical sequence.
+    \item Literature survey table.
+    \item One selected research question.
+    \item Theorem/counterexample/proof attempt.
+    \item Simulator design and validation tests.
+    \item Experiments and plots.
+    \item Discussion: what is solved, what remains open.
+\end{enumerate}
+
+\section{Implementation Notes}
+
+The code is organized as follows:
+
+\begin{lstlisting}[basicstyle=\ttfamily\small,frame=single]
+simulator/
+  refauc/
+    instance.py          # model, diffusion, critical sets
+    generators.py        # graph and valuation generators
+    mechanisms/
+      benchmarks.py      # central and local Vickrey
+      network_vcg.py
+      idm.py
+      param_referral.py  # experimental sandbox
+    experiments.py
+  run_experiments.py
+  plot_results.py
+  tests/test_mechanisms.py
+\end{lstlisting}
+
+The most important implementation detail is the computation of $d_i$. The simulator removes node $i$ from the directed invitation graph and checks which buyers become unreachable from the seller. This directly implements the definition of diffusion-critical descendants.
+
+\section{Risks and Mitigations}
+
+\begin{tabularx}{\textwidth}{p{0.25\textwidth}X}
+\toprule
+\textbf{Risk} & \textbf{Mitigation}\\
+\midrule
+Too much literature, too little result & Fix one narrow target: non-i.i.d. path or two-level tree.\\
+Mechanism not actually truthful & Clearly separate theorem-level mechanisms from experimental sandboxes.\\
+Experiments look like random plotting & Every plot should test a specific claim: deficit, welfare loss, revenue gain, or topology effect.\\
+Open problem too hard & Aim for a counterexample or restricted theorem instead of broad optimality.\\
+\bottomrule
+\end{tabularx}
+
+\section{Conclusion}
+
+The best version of this project is theory-first but implementation-supported. The literature already contains strong mechanisms for single-item diffusion auctions, fairer rewards, redistribution, privacy, transaction costs, and i.i.d. optimal referral auctions. Therefore, the project should focus on a boundary of known theory: non-i.i.d. values and topology robustness. A small theorem, a clean counterexample, or a carefully validated experimental insight would align well with a research-style mechanism design project.
+
+\begin{thebibliography}{99}
+
+\bibitem{li2017mdsn}
+Bin Li, Dong Hao, Dengji Zhao, and Tao Zhou.
+\newblock Mechanism Design in Social Networks.
+\newblock \emph{AAAI}, 2017.
+
+\bibitem{li2022diffusion}
+Bin Li, Dong Hao, Hui Gao, and Dengji Zhao.
+\newblock Diffusion auction design.
+\newblock \emph{Artificial Intelligence}, 303:103631, 2022.
+
+\bibitem{zhao2018multi}
+Dengji Zhao, Bin Li, Junping Xu, Dong Hao, and Nicholas R. Jennings.
+\newblock Selling Multiple Items via Social Networks.
+\newblock \emph{AAMAS}, 2018.
+
+\bibitem{zhang2020redistribution}
+Wen Zhang, Dengji Zhao, and Hanyu Chen.
+\newblock Redistribution Mechanism on Networks.
+\newblock \emph{AAMAS}, 2020.
+
+\bibitem{zhang2020fair}
+Wen Zhang, Dengji Zhao, and Yao Zhang.
+\newblock Incentivize Diffusion with Fair Rewards.
+\newblock \emph{ECAI}, 2020.
+
+\bibitem{guo2021survey}
+Yuhang Guo and Dong Hao.
+\newblock Emerging Methods of Auction Design in Social Networks.
+\newblock \emph{IJCAI Survey Track}, 2021.
+
+\bibitem{bhattacharyya2024optimal}
+Rangeet Bhattacharyya, Parvik Dave, Palash Dey, and Swaprava Nath.
+\newblock Optimal Referral Auction Design.
+\newblock \emph{AAMAS}, 2024.
+
+\bibitem{li2024cost}
+Bin Li, Dong Hao, and Dengji Zhao.
+\newblock Diffusion auction design with transaction costs.
+\newblock \emph{Autonomous Agents and Multi-Agent Systems}, 38(2), 2024.
+
+\bibitem{jia2023dp}
+Fengjuan Jia, Mengxiao Zhang, Jiamou Liu, and Bakh Khoussainov.
+\newblock Incentivising Diffusion while Preserving Differential Privacy.
+\newblock \emph{UAI}, 2023.
+
+\bibitem{chen2023sybil}
+Hongyin Chen, Xiaotie Deng, Ying Wang, Yue Wu, and Dengji Zhao.
+\newblock Sybil-Proof Diffusion Auction in Social Networks.
+\newblock \emph{AAMAS}, 2023.
+
+\bibitem{gu2023redistribution}
+Sizhe Gu, Yao Zhang, Yida Zhao, and Dengji Zhao.
+\newblock A Redistribution Framework for Diffusion Auctions.
+\newblock \emph{AAMAS}, 2023.
+
+\bibitem{myerson1981}
+Roger B. Myerson.
+\newblock Optimal Auction Design.
+\newblock \emph{Mathematics of Operations Research}, 6(1):58--73, 1981.
+
+\end{thebibliography}
+
+\end{document}
