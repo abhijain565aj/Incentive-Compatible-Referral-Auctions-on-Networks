@@ -20,3 +20,21 @@ As an extension, we will **stress-test referral auctions under relaxed assumptio
 * Abhi Jain (23b0903)
 * Harshit Raj (23b0950)
 * Ridam Jan (23b1049)
+
+# Incentive-Compatible Referral Auctions on Networks
+
+Contents:
+
+- `report/referral_auction_report.pdf`: theory-first report.
+- `report/referral_auction_report.tex`: editable LaTeX source.
+- `simulator/`: modular Python simulator and tests.
+
+Quick simulator run:
+
+```bash
+cd simulator
+python -m pip install -r requirements.txt
+PYTHONPATH=. pytest -q
+PYTHONPATH=. python run_experiments.py
+PYTHONPATH=. python plot_results.py
+```
