@@ -40,6 +40,7 @@ def run_from_config(config_path: str = "config.ini") -> None:
     valuation_modes = _parse_csv_list(sim.get("valuation_modes", "uniform,lognormal,depth_biased"))
     diffusion_strategies = _parse_csv_list(sim.get("diffusion_strategies", "full,probabilistic"))
     topologies = _parse_csv_list(sim.get("topologies", "line,star,tree,er,ba"))
+    mechanisms = _parse_csv_list(sim.get("mechanisms", "network_vcg,idm"))
     invite_prob = sim.getfloat("invite_prob", 0.7)
 
     tree_branching = topo.getint("tree_branching", 2)
@@ -60,6 +61,7 @@ def run_from_config(config_path: str = "config.ini") -> None:
                 topologies=topologies,
                 valuation_mode=valuation_mode,
                 diffusion_strategy=diffusion_strategy,
+                mechanisms=mechanisms,
                 invite_prob=effective_invite_prob,
                 tree_branching=tree_branching,
                 ba_m=ba_m,

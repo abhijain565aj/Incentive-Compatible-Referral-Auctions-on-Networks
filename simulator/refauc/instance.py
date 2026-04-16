@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Dict, Iterable, List, Optional, Set, Tuple
 import random
+import math
 import networkx as nx
 
 Node = int
@@ -55,12 +56,24 @@ class AuctionResult:
         return (inst.value(node) if self.winner == node else 0.0) - self.payments.get(node, 0.0)
 
     def as_row(self, inst: AuctionInstance) -> Dict[str, object]:
+        utilities = [self.utility(inst, i) for i in sorted(self.participants)]
+        sum_utilities = float(sum(utilities))
+        product_utilities = float(math.prod(utilities)) if utilities else 0.0
+        if utilities and all(u > 0 for u in utilities):
+            log_product_utilities = float(sum(math.log(u) for u in utilities))
+        elif utilities:
+            log_product_utilities = float("-inf")
+        else:
+            log_product_utilities = 0.0
         return {
             "mechanism": self.mechanism,
             "winner": self.winner,
             "winner_value": self.allocation_value,
             "revenue": self.revenue,
             "welfare": self.social_welfare,
+            "welfare_sum_utilities": sum_utilities,
+            "welfare_product_utilities": product_utilities,
+            "welfare_log_product_utilities": log_product_utilities,
             "n_participants": len(self.participants),
             "diffusion_depth": self.meta.get("diffusion_depth", None),
             "negative_payments": sum(1 for x in self.payments.values() if x < -1e-9),

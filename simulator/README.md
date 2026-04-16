@@ -11,6 +11,10 @@ This simulator runs referral-auction experiments and plotting from one entry poi
 - `param_referral`
 - `sybil_resistant_referral`
 
+For the Li et al. (AAAI-17) paper comparison, use:
+- `network_vcg` (the paper's network extension of VCG / modified VCG)
+- `idm` (Information Diffusion Mechanism)
+
 ## Main workflow
 
 `run_experiments.py` does all of this, in order:
@@ -51,7 +55,14 @@ All simulation settings are editable in `config.ini`.
 - `topologies`: comma-separated list from `line,star,tree,er,ba`
 - `valuation_modes`: comma-separated list from `uniform,exponential,depth_biased,community,lognormal`
 - `diffusion_strategies`: comma-separated list from `full,none,probabilistic`
+- `mechanisms`: comma-separated mechanism names to run and compare
 - `invite_prob`: used only for `probabilistic` diffusion
+
+Available mechanism names:
+- `modified_vcg` (alias of `network_vcg`), `network_vcg`, `idm`, `central_vickrey`, `local_vickrey`, `param_referral`, `sybil_resistant_referral`
+
+Default in `config.ini` is now:
+- `mechanisms = modified_vcg,idm`
 
 ### `[topology]`
 - `tree_branching`
@@ -86,6 +97,11 @@ python run_experiments.py
 - summary CSV at `summary_results_csv`
 - per-grid CSV files in `per_run_dir`
 - clean plots in `plot_dir`
+
+Additional welfare metrics are computed per run and plotted:
+- `welfare_sum_utilities` = sum of utilities of participants
+- `welfare_product_utilities` = product of utilities of participants
+- `welfare_log_product_utilities` = log product of utilities (defined when all participant utilities are positive)
 
 ## Accuracy + plotting notes
 
