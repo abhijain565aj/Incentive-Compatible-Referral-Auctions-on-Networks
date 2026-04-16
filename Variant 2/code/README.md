@@ -14,9 +14,9 @@ This code accompanies the final project report. It implements a small but extens
 
 ```bash
 cd code
-python -m refauc.experiments --out ../results --n 20 40 --eta 0 0.5 1 2 3 --runs 100
-python -m refauc.truthfulness_checks --max-value 30
-python -m refauc.mean_externality_routing
+python3 -m refauc.experiments --out ../results --n 20 40 --eta 0 0.5 1 2 3 --runs 100
+python3 -m refauc.truthfulness_checks --max-value 30
+python3 -m refauc.mean_externality_routing
 ```
 
 Outputs are written to `results/runs.csv`, `results/summary.csv`, and PNG plots.

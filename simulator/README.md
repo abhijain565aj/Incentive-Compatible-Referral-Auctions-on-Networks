@@ -1,32 +1,101 @@
-# Referral Auction Simulator
+# Referral Auction Simulator (Config-Driven)
 
-A modular Python simulator for single-item auctions on social/referral networks.
+This simulator runs referral-auction experiments and plotting from one entry point.
 
-Implemented mechanisms:
+## Mechanisms included
 
-- `central_vickrey`: all buyers known to the seller, second-price benchmark.
-- `local_vickrey`: seller sells only to direct neighbours; no diffusion incentive.
-- `network_vcg`: VCG extension on the invitation graph; efficient but can create negative revenue.
-- `idm`: Information Diffusion Mechanism from Li et al.
-- `param_referral`: configurable sandbox mechanism for non-i.i.d. and topology stress tests.
+- `central_vickrey`
+- `local_vickrey`
+- `network_vcg`
+- `idm`
+- `param_referral`
+- `sybil_resistant_referral`
+
+## Main workflow
+
+`run_experiments.py` does all of this, in order:
+
+1. Reads all parameters from `config.ini`
+2. Runs simulations for every configured grid combination
+3. Saves run-level and summary CSV files
+4. Automatically generates clean plots in the configured plot folder
 
 ## Quick start
 
 ```bash
 cd simulator
+venv
 python -m pip install -r requirements.txt
 python run_experiments.py
-python plot_results.py
-pytest -q
 ```
 
-## Where to extend
+Use a custom config file:
 
-- Add a mechanism in `refauc/mechanisms/` and register it in `refauc/mechanisms/__init__.py`.
-- Add topology or valuation models in `refauc/generators.py`.
-- Use `param_referral_auction(..., reserve_by_node=..., referral_share=...)` for experiments with non-i.i.d. priors.
+```bash
+python run_experiments.py --config my_config.ini
+```
 
-## Sign convention
+## Config file (`config.ini`)
 
-Payments are from buyer to seller. Negative payment means the mechanism rewards that buyer.
-Seller revenue is the sum of all payments.
+All simulation settings are editable in `config.ini`.
+
+### `[paths]`
+- `raw_results_csv`: merged run-level CSV
+- `summary_results_csv`: grouped summary CSV
+- `per_run_dir`: one CSV per `(valuation_mode, diffusion_strategy)`
+- `plot_dir`: folder where all plots are saved
+
+### `[simulation]`
+- `seed_start`, `seed_count`: seeds are `range(seed_start, seed_start + seed_count)`
+- `sizes`: comma-separated node counts
+- `topologies`: comma-separated list from `line,star,tree,er,ba`
+- `valuation_modes`: comma-separated list from `uniform,exponential,depth_biased,community,lognormal`
+- `diffusion_strategies`: comma-separated list from `full,none,probabilistic`
+- `invite_prob`: used only for `probabilistic` diffusion
+
+### `[topology]`
+- `tree_branching`
+- `ba_m`
+- `er_p_max`
+- `er_p_scale`
+
+## Example bigger run
+
+Set in `config.ini`:
+
+```ini
+[simulation]
+seed_start = 0
+seed_count = 40
+sizes = 30,60,90,120
+topologies = line,star,tree,er,ba
+valuation_modes = uniform,lognormal,depth_biased,exponential
+diffusion_strategies = full,probabilistic
+invite_prob = 0.65
+```
+
+Then run:
+
+```bash
+python run_experiments.py
+```
+
+## Outputs
+
+- merged run-level CSV at `raw_results_csv`
+- summary CSV at `summary_results_csv`
+- per-grid CSV files in `per_run_dir`
+- clean plots in `plot_dir`
+
+## Accuracy + plotting notes
+
+- Probabilistic diffusion now correctly uses `invite_prob` from config.
+- Topology generation parameters are fully configurable.
+- Plots are saved with constrained layouts, rotated labels, and moved legends to avoid overlap.
+
+## Run tests
+
+```bash
+venv
+PYTHONPATH=$PWD pytest -q
+```

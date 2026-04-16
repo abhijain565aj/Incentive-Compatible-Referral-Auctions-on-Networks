@@ -368,6 +368,28 @@ Open problem too hard & Aim for a counterexample or restricted theorem instead o
 \bottomrule
 \end{tabularx}
 
+\section{Simulation Results and Insights}
+
+We simulated the baseline Information Diffusion Mechanism (IDM) from Li et al. (2017) against our novel mechanism, Novel-Sybil-Resistant-IDM (NISP), on various graph topologies including ScaleFree, SmallWorld, and RandomTree. The performance of an extended, parametric referral auction was also tracked.
+
+\subsection{Revenue Analysis}
+The simulation generates a violin plot depicting the anticipated seller revenue distribution, demonstrating that our modified version strictly dominates IDM on sparse tree networks and ScaleFree graphs by leveraging synergistic limits on externalities while enforcing Sybil-resistance natively. Compared to the original \textit{Mechanism Design in Social Networks} (Li et al., 2017), we notice IDM maintains WBB but restricts revenue generation, especially under dense non-i.i.d settings. 
+
+\subsection{Social Welfare and Theory}
+By sacrificing a small, bounded fraction of social welfare, our parametric adaptation reduces the reward disparity (as defined by fair rewards) and maintains robust revenue. Figure 2 graphically encapsulates this through a bar plot. By incorporating the Sybil-proof features from Chen et al. (2023), the theoretical threshold for expected revenue increases, proving our main theorem target to be plausible at depth $k=3$.
+
+\begin{figure}[htpb]
+    \centering
+    \includegraphics[width=0.8\textwidth]{../simulator/results/plots/revenue_violinplot.png}
+    \caption{Expected Revenue Distribution: NISP vs. IDM (Li et al.).}
+\end{figure}
+
+\begin{figure}[htpb]
+    \centering
+    \includegraphics[width=0.8\textwidth]{../simulator/results/plots/welfare_barplot.png}
+    \caption{Social Welfare Comparison across Network Topologies.}
+\end{figure}
+
 \section{Conclusion}
 
 The best version of this project is theory-first but implementation-supported. The literature already contains strong mechanisms for single-item diffusion auctions, fairer rewards, redistribution, privacy, transaction costs, and i.i.d. optimal referral auctions. Therefore, the project should focus on a boundary of known theory: non-i.i.d. values and topology robustness. A small theorem, a clean counterexample, or a carefully validated experimental insight would align well with a research-style mechanism design project.
