@@ -55,7 +55,7 @@
 \title[Sybil-Robust Multi-Item Diffusion Auctions]{Sybil-Robust Multi-Item Diffusion Auctions}
 \subtitle{Extending Sybil-proof diffusion auctions beyond the single-item setting}
 \author[Abhi Jain, Harshit Raj, Ridam Jan]{Abhi Jain (23B0903) \and Harshit Raj (23B0950) \and Ridam Jan (23B1049)}
-\date{20 minute presentation $+$ 5 minute discussion}
+% \date{20 minute presentation $+$ 5 minute discussion}
 
 \begin{document}
 
@@ -123,7 +123,7 @@
     \item A buyer participates only if auction information reaches her.
     \item Each informed buyer reports
     \[
-        a_i=(b_i, r_i'), \qquad r_i'\subseteq r_i.
+        a_i=(v_i', r_i'), \qquad r_i'\subseteq r_i.
     \]
     \item Mechanism must incentivize two things:
     \begin{itemize}
@@ -145,7 +145,7 @@
 \greenblock{Incentive Compatibility (IC)}{
 Truthful bidding and full diffusion is a dominant strategy:
 \[
- u_i(v_i,r_i; a_{-i}) \ge u_i(b_i,r_i'; a_{-i}).
+ u_i(v_i,r_i; a_{-i}) \ge u_i(v_i',r_i'; a_{-i}).
 \]
 }
 \greenblock{Individual Rationality (IR)}{
@@ -168,9 +168,9 @@ For one item, welfare is value of the winner. For $k$ items, sum of values of re
 \begin{center}
 \begin{tikzpicture}
   \node[idea] (ic) at (0,0) {truthful bids};
-  \node[idea] (diff) at (3.2,0) {full diffusion};
-  \node[idea] (rev) at (6.4,0) {non-negative revenue};
-  \node[idea] (rob) at (9.6,0) {Sybil robustness};
+  \node[idea] (diff) at (4,0) {full diffusion};
+  \node[idea] (rev) at (8,0) {non-negative revenue};
+  \node[idea] (rob) at (12,0) {Sybil robustness};
   \draw[arrow] (ic)--(diff); \draw[arrow] (diff)--(rev); \draw[arrow] (rev)--(rob);
 \end{tikzpicture}
 \end{center}
