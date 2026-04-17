@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="560" viewBox="0 0 900 560">
+<rect width="100%" height="100%" fill="white"/>
+<text x="450.0" y="32" text-anchor="middle" font-family="Arial" font-size="22" font-weight="bold">Multiple/different items: welfare_mean</text>
+<line x1="90" y1="480" x2="710" y2="480" stroke="#222" stroke-width="2"/>
+<line x1="90" y1="60" x2="90" y2="480" stroke="#222" stroke-width="2"/>
+<line x1="90.0" y1="480" x2="90.0" y2="486" stroke="#222"/>
+<text x="90.0" y="504" text-anchor="middle" font-family="Arial" font-size="13">20</text>
+<line x1="84" y1="480.0" x2="90" y2="480.0" stroke="#222"/>
+<text x="80" y="484.0" text-anchor="end" font-family="Arial" font-size="13">0.0</text>
+<line x1="90" y1="480.0" x2="710" y2="480.0" stroke="#eee"/>
+<line x1="214.0" y1="480" x2="214.0" y2="486" stroke="#222"/>
+<text x="214.0" y="504" text-anchor="middle" font-family="Arial" font-size="13">28</text>
+<line x1="84" y1="396.0" x2="90" y2="396.0" stroke="#222"/>
+<text x="80" y="400.0" text-anchor="end" font-family="Arial" font-size="13">68.5</text>
+<line x1="90" y1="396.0" x2="710" y2="396.0" stroke="#eee"/>
+<line x1="338.0" y1="480" x2="338.0" y2="486" stroke="#222"/>
+<text x="338.0" y="504" text-anchor="middle" font-family="Arial" font-size="13">36</text>
+<line x1="84" y1="312.0" x2="90" y2="312.0" stroke="#222"/>
+<text x="80" y="316.0" text-anchor="end" font-family="Arial" font-size="13">136.9</text>
+<line x1="90" y1="312.0" x2="710" y2="312.0" stroke="#eee"/>
+<line x1="462.0" y1="480" x2="462.0" y2="486" stroke="#222"/>
+<text x="462.0" y="504" text-anchor="middle" font-family="Arial" font-size="13">44</text>
+<line x1="84" y1="228.0" x2="90" y2="228.0" stroke="#222"/>
+<text x="80" y="232.0" text-anchor="end" font-family="Arial" font-size="13">205.4</text>
+<line x1="90" y1="228.0" x2="710" y2="228.0" stroke="#eee"/>
+<line x1="586.0" y1="480" x2="586.0" y2="486" stroke="#222"/>
+<text x="586.0" y="504" text-anchor="middle" font-family="Arial" font-size="13">52</text>
+<line x1="84" y1="144.0" x2="90" y2="144.0" stroke="#222"/>
+<text x="80" y="148.0" text-anchor="end" font-family="Arial" font-size="13">273.8</text>
+<line x1="90" y1="144.0" x2="710" y2="144.0" stroke="#eee"/>
+<line x1="710.0" y1="480" x2="710.0" y2="486" stroke="#222"/>
+<text x="710.0" y="504" text-anchor="middle" font-family="Arial" font-size="13">60</text>
+<line x1="84" y1="60.0" x2="90" y2="60.0" stroke="#222"/>
+<text x="80" y="64.0" text-anchor="end" font-family="Arial" font-size="13">342.3</text>
+<line x1="90" y1="60.0" x2="710" y2="60.0" stroke="#eee"/>
+<text x="400.0" y="535" text-anchor="middle" font-family="Arial" font-size="16">number of buyers</text>
+<text transform="translate(24,270.0) rotate(-90)" text-anchor="middle" font-family="Arial" font-size="16">welfare mean</text>
+<polyline points="90.0,190.3 400.0,167.6 710.0,147.6" fill="none" stroke="#1f77b4" stroke-width="3"/>
+<circle cx="90.0" cy="190.3" r="4" fill="#1f77b4"/>
+<circle cx="400.0" cy="167.6" r="4" fill="#1f77b4"/>
+<circle cx="710.0" cy="147.6" r="4" fill="#1f77b4"/>
+<line x1="735" y1="85" x2="765" y2="85" stroke="#1f77b4" stroke-width="3"/>
+<text x="772" y="90" font-family="Arial" font-size="13">Heterogeneous-VCG</text>
+<polyline points="90.0,117.7 400.0,86.8 710.0,60.0" fill="none" stroke="#d62728" stroke-width="3"/>
+<circle cx="90.0" cy="117.7" r="4" fill="#d62728"/>
+<circle cx="400.0" cy="86.8" r="4" fill="#d62728"/>
+<circle cx="710.0" cy="60.0" r="4" fill="#d62728"/>
+<line x1="735" y1="109" x2="765" y2="109" stroke="#d62728" stroke-width="3"/>
+<text x="772" y="114" font-family="Arial" font-size="13">MultiUnit-VCG-3</text>
+</svg>

@@ -6,7 +6,7 @@ presentation/*
 !presentation/xgames.sty
 
 */report/*
-!*report/report.tex
+!*/report/report.tex
 report/*
 !report/report.tex
 
