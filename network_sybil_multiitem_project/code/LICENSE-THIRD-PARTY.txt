@@ -1,0 +1,8 @@
+
+This project contains an adapted copy of the GIDM baseline implementation from:
+
+bcirillo99/Homogeneous-Multi-unit-Auction-over-a-Social-Network
+https://github.com/bcirillo99/Homogeneous-Multi-unit-Auction-over-a-Social-Network
+
+The repository is distributed under the MIT License.
+Only the GIDM logic and the Bidder helper were adapted and repackaged for this course project.
