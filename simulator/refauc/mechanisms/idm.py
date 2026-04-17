@@ -18,8 +18,9 @@ def information_diffusion_mechanism(inst: AuctionInstance, diffusion_strategy: s
 
     C = diffusion_critical_sequence(inst, DG, participants, m, dsets)
     w = m
-    # First critical ancestor that is exactly the best outside the next descendant set.
-    # With real-valued random bids, equality is tested numerically.
+    # IDM winner rule from Li et al. (AAAI-17):
+    # choose the first i on C_m such that i is the highest bidder in -d_{next(i)}.
+    # Under floating-point sampling we use >= with tolerance.
     for idx, i in enumerate(C[:-1]):
         nxt = C[idx + 1]
         outside_next = participants - dsets[nxt]
@@ -31,7 +32,10 @@ def information_diffusion_mechanism(inst: AuctionInstance, diffusion_strategy: s
     Cw = diffusion_critical_sequence(inst, DG, participants, w, dsets)
     for idx, i in enumerate(Cw[:-1]):
         nxt = Cw[idx + 1]
+        # IDM payment for on-path diffusion-critical nodes:
+        # p_i = v*_{-d_i} - v*_{-d_{next(i)}}
         payments[i] = max_value(inst, participants - dsets[i]) - max_value(inst, participants - dsets[nxt])
+    # Winner payment in IDM: p_w = v*_{-d_w}
     payments[w] = max_value(inst, participants - dsets[w])
     return AuctionResult("idm", w, inst.value(w), payments, participants, edges, {
         "highest_bidder": m,

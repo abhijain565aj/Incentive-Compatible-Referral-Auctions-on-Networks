@@ -23,10 +23,42 @@ MECHS = [
     sybil_resistant_referral_auction,
 ]
 
+MECH_BY_NAME = {
+    "central_vickrey": central_vickrey,
+    "local_vickrey": local_vickrey,
+    "network_vcg": network_vcg,
+    "modified_vcg": network_vcg,
+    "idm": information_diffusion_mechanism,
+    "param_referral": parametric_referral_auction,
+    "sybil_resistant_referral": sybil_resistant_referral_auction,
+}
 
-def run_one(inst: AuctionInstance, seed: int = 0, diffusion_strategy: str = "full", **kwargs) -> List[Dict[str, object]]:
+
+def _resolve_mechanisms(mechanisms: Optional[Iterable[str]]) -> List[Callable]:
+    if mechanisms is None:
+        return list(MECHS)
+    picked: List[Callable] = []
+    for name in mechanisms:
+        key = str(name).strip()
+        if not key:
+            continue
+        if key not in MECH_BY_NAME:
+            raise ValueError(f"Unknown mechanism '{key}'. Available: {sorted(MECH_BY_NAME.keys())}")
+        picked.append(MECH_BY_NAME[key])
+    if not picked:
+        raise ValueError("No mechanisms selected.")
+    return picked
+
+
+def run_one(
+    inst: AuctionInstance,
+    seed: int = 0,
+    diffusion_strategy: str = "full",
+    mechanisms: Optional[Iterable[str]] = None,
+    **kwargs,
+) -> List[Dict[str, object]]:
     rows = []
-    for mech in MECHS:
+    for mech in _resolve_mechanisms(mechanisms):
         res = mech(inst, diffusion_strategy=diffusion_strategy, seed=seed, **kwargs)
         row = res.as_row(inst)
         row["instance"] = inst.name
@@ -43,6 +75,7 @@ def sweep(
     topologies: Iterable[str] = ("line", "star", "tree", "er", "ba"),
     valuation_mode: str = "uniform",
     diffusion_strategy: str = "full",
+    mechanisms: Optional[Iterable[str]] = None,
     invite_prob: float = 1.0,
     tree_branching: int = 2,
     ba_m: int = 2,
@@ -74,6 +107,7 @@ def sweep(
                     inst,
                     seed=seed,
                     diffusion_strategy=diffusion_strategy,
+                    mechanisms=mechanisms,
                     invite_prob=invite_prob,
                 ):
                     row["topology"] = topo
@@ -114,6 +148,9 @@ def summarize(rows: List[Dict[str, object]]) -> List[Dict[str, object]]:
     for key, grp in sorted(groups.items(), key=lambda kv: tuple(str(x) for x in kv[0])):
         rev = [float(r["revenue"]) for r in grp]
         wel = [float(r["welfare"]) for r in grp]
+        wel_sum_u = [float(r["welfare_sum_utilities"]) for r in grp]
+        wel_prod_u = [float(r["welfare_product_utilities"]) for r in grp]
+        wel_log_prod_u = [float(r["welfare_log_product_utilities"]) for r in grp if float(r["welfare_log_product_utilities"]) != float("-inf")]
         npart = [float(r["n_participants"]) for r in grp]
         deficits = sum(1 for r in rev if r < -1e-9)
         out.append(
@@ -128,6 +165,12 @@ def summarize(rows: List[Dict[str, object]]) -> List[Dict[str, object]]:
                 "revenue_std": statistics.pstdev(rev) if len(rev) > 1 else 0.0,
                 "welfare_mean": statistics.fmean(wel),
                 "welfare_std": statistics.pstdev(wel) if len(wel) > 1 else 0.0,
+                "welfare_sum_utilities_mean": statistics.fmean(wel_sum_u),
+                "welfare_sum_utilities_std": statistics.pstdev(wel_sum_u) if len(wel_sum_u) > 1 else 0.0,
+                "welfare_product_utilities_mean": statistics.fmean(wel_prod_u),
+                "welfare_product_utilities_std": statistics.pstdev(wel_prod_u) if len(wel_prod_u) > 1 else 0.0,
+                "welfare_log_product_utilities_mean": statistics.fmean(wel_log_prod_u) if wel_log_prod_u else float("-inf"),
+                "welfare_log_product_utilities_std": statistics.pstdev(wel_log_prod_u) if len(wel_log_prod_u) > 1 else 0.0,
                 "participants_mean": statistics.fmean(npart),
                 "deficit_rate": deficits / len(grp),
                 "budget_balance_rate": 1.0 - deficits / len(grp),

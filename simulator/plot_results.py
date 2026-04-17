@@ -1,5 +1,6 @@
 from pathlib import Path
 import configparser
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -66,9 +67,22 @@ def main(path: str | None = None, out_dir: str | None = None, config_path: str =
     else:
         df["topology_label"] = "All"
 
-    for col in ["revenue", "welfare", "n_participants", "diffusion_depth", "winner_value", "negative_payments"]:
+    for col in [
+        "revenue",
+        "welfare",
+        "welfare_sum_utilities",
+        "welfare_product_utilities",
+        "welfare_log_product_utilities",
+        "n_participants",
+        "diffusion_depth",
+        "winner_value",
+        "negative_payments",
+    ]:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce")
+
+    # Clean non-finite values for plotting stability.
+    df = df.replace([np.inf, -np.inf], np.nan)
 
     existing_order = [m for m in mech_order if m in set(df["mechanism"])]
     existing_labels = [mech_label[m] for m in existing_order]
@@ -336,6 +350,74 @@ def main(path: str | None = None, out_dir: str | None = None, config_path: str =
         plt.ylabel("Mean Revenue Difference")
         _save(plt, out / "11_novel_uplift_vs_idm.png")
         plt.close()
+
+    # 12) Welfare as sum of participant utilities
+    if "welfare_sum_utilities" in df.columns:
+        g = sns.catplot(
+            data=df,
+            kind="bar",
+            x="topology_label",
+            y="welfare_sum_utilities",
+            hue="mechanism_label",
+            hue_order=existing_labels,
+            errorbar=("ci", 95),
+            capsize=0.08,
+            height=5.1,
+            aspect=1.25,
+            palette="Set2",
+        )
+        g.set_titles("")
+        g.set_axis_labels("Topology", "Sum of Utilities")
+        g.fig.suptitle("Welfare (Sum of Participant Utilities)", y=1.03)
+        sns.move_legend(g, "upper center", bbox_to_anchor=(0.5, -0.08), ncol=3, frameon=False)
+        _save(g, out / "12_welfare_sum_utilities_bar_topology.png")
+        plt.close("all")
+
+    # 13) Welfare as product of participant utilities
+    if "welfare_product_utilities" in df.columns:
+        g = sns.catplot(
+            data=df,
+            kind="bar",
+            x="topology_label",
+            y="welfare_product_utilities",
+            hue="mechanism_label",
+            hue_order=existing_labels,
+            errorbar=("ci", 95),
+            capsize=0.08,
+            height=5.1,
+            aspect=1.25,
+            palette="Set3",
+        )
+        g.set_titles("")
+        g.set_axis_labels("Topology", "Product of Utilities")
+        g.fig.suptitle("Welfare (Product of Participant Utilities)", y=1.03)
+        sns.move_legend(g, "upper center", bbox_to_anchor=(0.5, -0.08), ncol=3, frameon=False)
+        _save(g, out / "13_welfare_product_utilities_bar_topology.png")
+        plt.close("all")
+
+    # 14) Welfare as log-product of participant utilities
+    if "welfare_log_product_utilities" in df.columns:
+        dflog = df.dropna(subset=["welfare_log_product_utilities"]).copy()
+        if not dflog.empty:
+            g = sns.catplot(
+                data=dflog,
+                kind="bar",
+                x="topology_label",
+                y="welfare_log_product_utilities",
+                hue="mechanism_label",
+                hue_order=existing_labels,
+                errorbar=("ci", 95),
+                capsize=0.08,
+                height=5.1,
+                aspect=1.25,
+                palette="muted",
+            )
+            g.set_titles("")
+            g.set_axis_labels("Topology", "Log Product of Utilities")
+            g.fig.suptitle("Welfare (Log Product of Participant Utilities)", y=1.03)
+            sns.move_legend(g, "upper center", bbox_to_anchor=(0.5, -0.08), ncol=3, frameon=False)
+            _save(g, out / "14_welfare_log_product_utilities_bar_topology.png")
+            plt.close("all")
 
     print(f"plots written under {out}")
 

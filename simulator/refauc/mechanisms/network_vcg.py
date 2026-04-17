@@ -15,6 +15,8 @@ def network_vcg(inst: AuctionInstance, diffusion_strategy: str = "full", invite_
         return AuctionResult("network_vcg", None, 0.0, payments, participants, edges, {"diffusion_depth": max(depth.values(), default=0)})
     W = inst.value(winner)
     for i in participants:
+        # Li et al. (AAAI-17) network VCG payment:
+        # p_i = W(a'_{-d_i}) - (W(a') - pi_i * v_i')
         outside_di = participants - dsets[i]
         W_without_di = max_value(inst, outside_di)
         payments[i] = W_without_di - (W - (inst.value(i) if i == winner else 0.0))
