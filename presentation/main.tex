@@ -722,7 +722,8 @@ In short: \impterm{intermediaries/brokers do not benefit from telling auction in
     
     % -------- Nodes --------
     % Root
-    \node[seller] (S) at (0, 6) {S};
+    \node[seller] (S) at (-1, 6) {S};
+    \node[smallbuyer] (Z) at (1, 6.0) {1};
     
     % Level 1
     \node[smallbuyer] (A) at (-2, 5.0) {7};
@@ -736,10 +737,10 @@ In short: \impterm{intermediaries/brokers do not benefit from telling auction in
     \node[smallbuyer] (G) at (4.0, 4.0) {17};
     
     % Level 3
-    \node[smallbuyer] (H) at (-2, 3) {16};
+    \node[smallbuyer] (H) at (-2, 3) {19};
     \node[smallbuyer] (I) at (-1, 3) {6};
     \node[smallbuyer] (J) at (0, 3) {5};
-    \node[smallbuyer] (K) at (1.75, 3) {19};
+    \node[smallbuyer] (K) at (1.75, 3) {18};
     \node[smallbuyer] (L) at (3.25, 3) {10};
     
     % Level 4
@@ -753,10 +754,11 @@ In short: \impterm{intermediaries/brokers do not benefit from telling auction in
 
     % -------- Edges --------
     % Image lines are plain without arrowheads, so using standard \draw
-    \draw (S)--(A); \draw (S)--(B); \draw (S)--(C);
+    \draw (S)--(A); \draw (S)--(B); \draw (S)--(Z);
     
     \draw (A)--(D); 
-    \draw (B)--(D); \draw (B)--(C);
+    \draw (B)--(D); 
+    \draw (Z)--(C);
     
     \draw (C)--(E); \draw (C)--(F); \draw (C)--(G);
     
@@ -778,6 +780,7 @@ In short: \impterm{intermediaries/brokers do not benefit from telling auction in
     \node[font=\tiny] at (-2.4, 5.0) {A};
     \node[font=\tiny] at (-0.4, 5.0) {B};
     \node[font=\tiny] at (2.4, 5.0) {C};
+    \node[font=\tiny] at (1.4, 6.0) {Z};
     
     \node[font=\tiny] at (-1.5, 4.0) {D};
     \node[font=\tiny] at (1.35, 4.0) {E};
@@ -809,35 +812,157 @@ In short: \impterm{intermediaries/brokers do not benefit from telling auction in
 \end{itemize}
 \end{column}
 \end{columns}
-{\tiny Source: Zhao, Li, Xu, Hao, Jennings, \emph{Selling Multiple Items via Social Networks}, AAMAS 2018.}
 \end{frame}
 
+\begin{frame}{Multiple homogeneous items: GIDM}
+\begin{columns}[T,totalwidth=\textwidth]
+\begin{column}{0.52\textwidth}
+\begin{figure}[htbp]
+  \centering
+  \begin{tikzpicture}[scale=1.00]
+      \tikzset{
+        smallbuyer/.append style={minimum size=4.8mm, inner sep=0.5pt, font=\tiny},
+        sybil/.append style={minimum size=4.8mm, inner sep=0.5pt, font=\tiny},
+        seller/.append style={minimum size=6.8mm}
+      }
+    
+    % -------- Nodes --------
+    % Root
+    \node[seller] (S) at (-1, 6) {S};
+    \node[smallbuyer] (Z) at (1, 6.0) {1};
+    
+    % Level 1
+    \node[smallbuyer] (A) at (-2, 5.0) {7};
+    \node[smallbuyer] (B) at (0, 5.0) {4};
+    \node[smallbuyer] (C) at (2, 5.0) {2};
+    
+    % Level 2
+    \node[smallbuyer] (D) at (-1, 4.0) {14};
+    \node[smallbuyer] (E) at (1, 4.0) {8};
+    \node[smallbuyer] (F) at (2.5, 4.0) {9};
+    \node[smallbuyer] (G) at (4.0, 4.0) {17};
+    
+    % Level 3
+    \node[smallbuyer] (H) at (-2, 3) {19};
+    \node[smallbuyer] (I) at (-1, 3) {6};
+    \node[smallbuyer] (J) at (0, 3) {5};
+    \node[smallbuyer] (K) at (1.75, 3) {18};
+    \node[smallbuyer] (L) at (3.25, 3) {10};
+    
+    % Level 4
+    \node[smallbuyer] (M) at (-1, 2) {15};
+    \node[smallbuyer] (Y) at (1.75, 2) {20};
+    
+    % Level 5
+    \node[smallbuyer] (O) at (-1, 1) {3};
+    \node[smallbuyer] (P) at (1.25, 1) {11};
+    \node[smallbuyer] (Q) at (2.25, 1) {1};
+
+    % -------- Edges --------
+    % Image lines are plain without arrowheads, so using standard \draw
+    \draw (S)--(A); \draw (S)--(B); \draw (S)--(Z);
+    
+    \draw (A)--(D); 
+    \draw (B)--(D); 
+    \draw (Z)--(C);
+    
+    \draw (C)--(E); \draw (C)--(F); \draw (C)--(G);
+    
+    \draw (D)--(H); \draw (D)--(I); \draw (D)--(J);
+    \draw (H)--(I); \draw (I)--(J);
+    
+    \draw (E)--(K); 
+    \draw (F)--(K); \draw (F)--(L);
+    
+    \draw (I)--(M); 
+    \draw (K)--(Y);
+    
+    \draw (M)--(O); 
+    \draw (Y)--(P); \draw (Y)--(Q);
+    \draw (P)--(Q);
+
+    % -------- Letter Labels --------
+    % Placed similarly to the \tiny font labels in your snippet
+    \node[font=\tiny] at (-2.4, 5.0) {A};
+    \node[font=\tiny] at (-0.4, 5.0) {B};
+    \node[font=\tiny] at (2.4, 5.0) {C};
+    \node[font=\tiny] at (1.4, 6.0) {Z};
+    
+    \node[font=\tiny] at (-1.5, 4.0) {D};
+    \node[font=\tiny] at (1.35, 4.0) {E};
+    \node[font=\tiny] at (2.85, 4.0) {F};
+    \node[font=\tiny] at (4.35, 4.0) {G};
+    
+    \node[font=\tiny] at (-2.40, 3) {H};
+    \node[font=\tiny] at (-1.35, 2.8) {I};
+    \node[font=\tiny] at (0.45, 3) {J};
+    \node[font=\tiny] at (2.1, 3) {K};
+    
+    \node[font=\tiny] at (-1.35, 2) {M};
+    \node[font=\tiny] at (2.1, 2) {Y};
+    
+    \node[font=\tiny] at (-1.35, 1) {O};
+    \node[font=\tiny] at (0.85, 1) {P};
+    \node[font=\tiny] at (2.70, 1) {Q};
+
+  \end{tikzpicture}
+\end{figure}
+\end{column}
+\begin{column}{0.46\textwidth}
+\begin{figure}[htbp]
+  \centering
+  \begin{tikzpicture}[scale=1.00]
+      \tikzset{
+        smallbuyer/.append style={minimum size=4.8mm, inner sep=0.5pt, font=\tiny},
+        winner/.append style={minimum size=4.8mm, inner sep=0.5pt, font=\tiny},
+        sybil/.append style={minimum size=4.8mm, inner sep=0.5pt, font=\tiny},
+        seller/.append style={minimum size=6.8mm}
+      }
+    
+    % -------- Nodes --------
+    % Root
+    \node[seller] (S) at (-1, 6) {S};
+    \node[smallbuyer] (Z) at (1, 6.0) {1};
+    \node[smallbuyer] (C) at (2, 5.0) {2};
+    \node[smallbuyer] (D) at (-1, 4.0) {14};
+    \node[winner] (H) at (-2, 3) {19};
+    \node[smallbuyer] (K) at (1.75, 3) {18};
+    \node[winner] (Y) at (1.75, 2) {20};
+
+    % -------- Edges --------
+    % Image lines are plain without arrowheads, so using standard \draw
+    \draw (S)--(D); 
+    \draw (S)--(Z); 
+    
+    \draw (Z)--(C);
+    
+    \draw (C)--(K);    
+    \draw (D)--(H); 
+    
+    
+    \draw (K)--(Y);
+    
+
+    % -------- Letter Labels --------
+    \node[font=\tiny] at (2.4, 5.0) {C};
+    \node[font=\tiny] at (1.4, 6.0) {Z};
+    
+    \node[font=\tiny] at (-1.5, 4.0) {D};
+    
+    \node[font=\tiny] at (-2.40, 3) {H};
+    \node[font=\tiny] at (2.1, 3) {K};
+    
+    \node[font=\tiny] at (2.1, 2) {Y};
+  \end{tikzpicture}
+\end{figure}
+\end{column}
+\end{columns}
+\end{frame}
 % -----------------------------------------------------------------------------
 \begin{frame}{Why ordinary GIDM is not enough under Sybil attacks}
 \begin{columns}[T,totalwidth=\textwidth]
 \begin{column}{0.56\textwidth}
-\centering
-\begin{tikzpicture}[scale=0.83]
-  \node[seller] (s) at (0,0) {$s$};
-  \node[buyer] (a) at (1.6,0) {$a$};
-  \node[buyer] (b) at (3.2,0.9) {$b$};
-  \node[buyer] (c) at (3.2,-0.9) {$c$};
-  \draw[arrow] (s)--(a); \draw[arrow] (a)--(b); \draw[arrow] (a)--(c);
-  \node[below=3mm of a] {\scriptsize true};
-  \node at (4.6,0) {$\Rightarrow$};
-  \node[seller] (s2) at (5.8,0) {$s$};
-  \node[buyer] (a2) at (7.2,0) {$a$};
-  \node[sybil] (a1) at (8.6,0.9) {$a_1'$};
-  \node[sybil] (a2s) at (8.6,-0.9) {$a_2'$};
-  \node[buyer] (b2) at (10.0,0.9) {$b$};
-  \node[buyer] (c2) at (10.0,-0.9) {$c$};
-  \draw[arrow] (s2)--(a2); \draw[redarrow] (a2)--(a1); \draw[redarrow] (a2)--(a2s);
-  \draw[arrow] (a1)--(b2); \draw[arrow] (a2s)--(c2);
-  \begin{scope}[on background layer]
-    \node[cluster, fit=(a2) (a1) (a2s)] {};
-  \end{scope}
-  \node[below=3mm of a2s] {\scriptsize reported};
-\end{tikzpicture}
+
 \end{column}
 \begin{column}{0.42\textwidth}
 \begin{itemize}
