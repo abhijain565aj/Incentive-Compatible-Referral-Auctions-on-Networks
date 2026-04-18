@@ -554,12 +554,10 @@ For one item, welfare is value of the winner. For $k$ items, sum of values of re
   \end{figure}
 \end{column}
 \begin{column}{0.46\textwidth}
-  {\large TODO: Update explaination}
+  {\large How VCG breaks with fake nodes}
 \begin{itemize}
-    \item Without fake $a'$: $a$ and $b$ are critical for $c$.
-    \item With fake $a'$: $a'$ also appears critical.
-    \item VCG pays one more diffusion reward.
-    \item Since $a$ controls $a'$, her total reward increases.
+    \item New Payment for C is $-3 + -3 = -6$.
+    \item Hence, fake node increased the reward from $3$ to $6$. 
 \end{itemize}
 \begin{alertblock}{Failure mode}
 VCG rewards graph positions. Fake graph positions create fake rewards.
@@ -626,12 +624,11 @@ VCG rewards graph positions. Fake graph positions create fake rewards.
   \end{figure}
 \end{column}
 \begin{column}{0.43\textwidth}
-  {\large TODO: Update explaination}
+  {\large How IDM breaks with fake nodes}
 \begin{itemize}
-    \item IDM uses critical sequence and benchmark bids.
-    \item A fake high-bid neighbor can raise the benchmark seen by the winner.
-    \item The creator can benefit through changed payments/rewards.
-\end{itemize}
+    \item New payment for C is $10 - 12.9 = -2.9$.
+    \item Hence, fake node increased the reward from $1$ to $2.9$.
+ \end{itemize}
 \greenblock{Known fact}{Existing diffusion mechanisms such as VCG and IDM are not Sybil-proof.}
 \vspace{-1mm}
 {\tiny This is the same attack pattern used in the Sybil-proof diffusion auction paper: fake nodes change payments while the real creator controls them.}
@@ -1572,34 +1569,34 @@ With perfect cluster recovery, no collusion, and unit-demand physical agents, SC
 % -----------------------------------------------------------------------------
 \section{Experiments and discussion}
 
-\begin{frame}{Simulation plan: what we compare}
-\begin{columns}[T,totalwidth=\textwidth]
-\begin{column}{0.48\textwidth}
-\begin{block}{Mechanisms}
-\begin{itemize}
-    \item Local $k$-Vickrey: no diffusion.
-    \item GIDM: no Sybil defense.
-    \item GIDM under Sybil attacks.
-    \item SC-GIDM: cluster then run GIDM.
-    \item Oracle GIDM on true graph.
-\end{itemize}
-\end{block}
-\end{column}
-\begin{column}{0.48\textwidth}
-\begin{block}{Networks and attacks}
-\begin{itemize}
-    \item Path, tree, Erd\H{o}s--R\'enyi, scale-free graphs.
-    \item Sybil chain attack.
-    \item Sybil star attack.
-    \item Fake high-bid threshold attack.
-    \item Noisy clustering: false negatives and false positives.
-\end{itemize}
-\end{block}
-\end{column}
-\end{columns}
-\vspace{2mm}
-\greenblock{Main experimental question}{How much welfare/revenue do we sacrifice to reduce attacker gain and fake allocation leakage?}
-\end{frame}
+% \begin{frame}{Simulation plan: what we compare}
+% \begin{columns}[T,totalwidth=\textwidth]
+% \begin{column}{0.48\textwidth}
+% \begin{block}{Mechanisms}
+% \begin{itemize}
+%     \item Local $k$-Vickrey: no diffusion.
+%     \item GIDM: no Sybil defense.
+%     \item GIDM under Sybil attacks.
+%     \item SC-GIDM: cluster then run GIDM.
+%     \item Oracle GIDM on true graph.
+% \end{itemize}
+% \end{block}
+% \end{column}
+% \begin{column}{0.48\textwidth}
+% \begin{block}{Networks and attacks}
+% \begin{itemize}
+%     \item Path, tree, Erd\H{o}s--R\'enyi, scale-free graphs.
+%     \item Sybil chain attack.
+%     \item Sybil star attack.
+%     \item Fake high-bid threshold attack.
+%     \item Noisy clustering: false negatives and false positives.
+% \end{itemize}
+% \end{block}
+% \end{column}
+% \end{columns}
+% \vspace{2mm}
+% \greenblock{Main experimental question}{How much welfare/revenue do we sacrifice to reduce attacker gain and fake allocation leakage?}
+% \end{frame}
 
 % -----------------------------------------------------------------------------
 \begin{frame}{Metrics: what counts as ``better''?}
@@ -1629,54 +1626,54 @@ With perfect cluster recovery, no collusion, and unit-demand physical agents, SC
 \end{frame}
 
 % -----------------------------------------------------------------------------
-\begin{frame}{What we expect to learn}
-\begin{itemize}
-    \item In the no-attack setting, GIDM should usually be better than local sale because diffusion reaches more buyers.
-    \item Under Sybil attacks, ordinary GIDM can be manipulated because it runs on reported identities.
-    \item SC-GIDM should reduce attacker gain under good clustering.
-    \item False negatives hurt robustness; false positives hurt welfare.
-    \item Dense graphs may lose less welfare because there are alternate diffusion paths.
-\end{itemize}
-\vspace{2mm}
-\begin{center}
-\begin{tikzpicture}
-  \node[bad] (gidm) at (0,0) {GIDM: high welfare, vulnerable};
-  \node[good] (sc) at (4.3,0) {SC-GIDM: robust, may lose welfare};
-  \node[idea] (oracle) at (8.6,0) {Oracle GIDM: ideal benchmark};
-  \draw[arrow] (gidm)--(sc); \draw[arrow] (sc)--(oracle);
-\end{tikzpicture}
-\end{center}
-\end{frame}
+% \begin{frame}{What we expect to learn}
+% \begin{itemize}
+%     \item In the no-attack setting, GIDM should usually be better than local sale because diffusion reaches more buyers.
+%     \item Under Sybil attacks, ordinary GIDM can be manipulated because it runs on reported identities.
+%     \item SC-GIDM should reduce attacker gain under good clustering.
+%     \item False negatives hurt robustness; false positives hurt welfare.
+%     \item Dense graphs may lose less welfare because there are alternate diffusion paths.
+% \end{itemize}
+% \vspace{2mm}
+% \begin{center}
+% \begin{tikzpicture}
+%   \node[bad] (gidm) at (0,0) {GIDM: high welfare, vulnerable};
+%   \node[good] (sc) at (4.3,0) {SC-GIDM: robust, may lose welfare};
+%   \node[idea] (oracle) at (8.6,0) {Oracle GIDM: ideal benchmark};
+%   \draw[arrow] (gidm)--(sc); \draw[arrow] (sc)--(oracle);
+% \end{tikzpicture}
+% \end{center}
+% \end{frame}
 
 % -----------------------------------------------------------------------------
-\begin{frame}{Limitations and future directions}
-\begin{columns}[T,totalwidth=\textwidth]
-\begin{column}{0.48\textwidth}
-\begin{alertblock}{Limitations}
-\begin{itemize}
-    \item Perfect clustering is strong.
-    \item No collusion between real buyers.
-    \item Homogeneous items only.
-    \item Single-unit demand only.
-    \item Not optimal among all SP mechanisms.
-\end{itemize}
-\end{alertblock}
-\end{column}
-\begin{column}{0.48\textwidth}
-\begin{block}{Next steps}
-\begin{itemize}
-    \item Better noisy-cluster guarantees.
-    \item Heterogeneous items.
-    \item Multi-unit demand.
-    \item Fair reward sharing inside clusters.
-    \item Compare with STM-like taxes for $k$ items.
-\end{itemize}
-\end{block}
-\end{column}
-\end{columns}
-\vspace{2mm}
-\greenblock{Research-style framing}{We solve a restricted version cleanly, show why the unrestricted version is hard, and evaluate the robustness--welfare tradeoff experimentally.}
-\end{frame}
+% \begin{frame}{Limitations and future directions}
+% \begin{columns}[T,totalwidth=\textwidth]
+% \begin{column}{0.48\textwidth}
+% \begin{alertblock}{Limitations}
+% \begin{itemize}
+%     \item Perfect clustering is strong.
+%     \item No collusion between real buyers.
+%     \item Homogeneous items only.
+%     \item Single-unit demand only.
+%     \item Not optimal among all SP mechanisms.
+% \end{itemize}
+% \end{alertblock}
+% \end{column}
+% \begin{column}{0.48\textwidth}
+% \begin{block}{Next steps}
+% \begin{itemize}
+%     \item Better noisy-cluster guarantees.
+%     \item Heterogeneous items.
+%     \item Multi-unit demand.
+%     \item Fair reward sharing inside clusters.
+%     \item Compare with STM-like taxes for $k$ items.
+% \end{itemize}
+% \end{block}
+% \end{column}
+% \end{columns}
+% \vspace{2mm}
+% \greenblock{Research-style framing}{We solve a restricted version cleanly, show why the unrestricted version is hard, and evaluate the robustness--welfare tradeoff experimentally.}
+% \end{frame}
 
 % -----------------------------------------------------------------------------
 % \begin{frame}{Final takeaway}
