@@ -1229,41 +1229,41 @@ Since $k=1$ is a special case, any multi-item extension that contains IDM-like b
 \section{Our mechanism}
 
 \begin{frame}{SC-GIDM: Sybil-Cluster GIDM}
-% \begin{columns}[T,totalwidth=\textwidth]
-% \begin{column}{0.52\textwidth}
-% \centering
-% \begin{tikzpicture}[scale=0.78]
-%   \node[seller] (s) at (0,0) {$s$};
-%   \node[buyer] (a) at (1.5,0) {$a$};
-%   \node[sybil] (a1) at (3.0,0.8) {$a_1'$};
-%   \node[sybil] (a2) at (3.0,-0.8) {$a_2'$};
-%   \node[buyer] (b) at (4.6,0.8) {$b$};
-%   \node[buyer] (c) at (4.6,-0.8) {$c$};
-%   \draw[arrow] (s)--(a); \draw[redarrow] (a)--(a1); \draw[redarrow] (a)--(a2);
-%   \draw[arrow] (a1)--(b); \draw[arrow] (a2)--(c);
-%   \begin{scope}[on background layer]
-%     \node[cluster, fit=(a) (a1) (a2)] (cl) {};
-%   \end{scope}
-%   \node at (5.7,0) {$\Rightarrow$};
-%   \node[seller] (qs) at (6.7,0) {$s$};
-%   \node[buyer] (qa) at (8.2,0) {$C_a$};
-%   \node[buyer] (qb) at (9.8,0.8) {$b$};
-%   \node[buyer] (qc) at (9.8,-0.8) {$c$};
-%   \draw[arrow] (qs)--(qa); \draw[arrow] (qa)--(qb); \draw[arrow] (qa)--(qc);
-%   \node[below=6mm of qa, align=center, font=\scriptsize] {quotient graph};
-% \end{tikzpicture}
-% \end{column}
-% \begin{column}{0.46\textwidth}
-% \begin{enumerate}
-%     \item Partition identities into clusters.
-%     \item Contract each cluster into one super-node.
-%     \item Cluster bid: $B_C=\max_{x\in C} b_x$.
-%     \item Cluster demand: at most one item.
-%     \item Run GIDM on the quotient graph.
-% \end{enumerate}
-% \end{column}
-% \end{columns}
-% \greenblock{Intuition}{Fake identities can exist inside a cluster, but they cannot create extra capacity or extra diffusion positions after contraction.}
+\begin{columns}[T,totalwidth=\textwidth]
+\begin{column}{0.52\textwidth}
+\centering
+\begin{tikzpicture}[scale=0.78]
+  \node[seller] (s) at (0,0) {$s$};
+  \node[buyer] (a) at (1.5,0) {$a$};
+  \node[sybil] (a1) at (3.0,0.8) {$a_1'$};
+  \node[sybil] (a2) at (3.0,-0.8) {$a_2'$};
+  \node[buyer] (b) at (4.6,0.8) {$b$};
+  \node[buyer] (c) at (4.6,-0.8) {$c$};
+  \draw[arrow] (s)--(a); \draw[redarrow] (a)--(a1); \draw[redarrow] (a)--(a2);
+  \draw[arrow] (a1)--(b); \draw[arrow] (a2)--(c);
+  \begin{scope}[on background layer]
+    \node[cluster, fit=(a) (a1) (a2)] (cl) {};
+  \end{scope}
+  \node at (5.7,0) {$\Rightarrow$};
+  \node[seller] (qs) at (6.7,0) {$s$};
+  \node[buyer] (qa) at (8.2,0) {$C_a$};
+  \node[buyer] (qb) at (9.8,0.8) {$b$};
+  \node[buyer] (qc) at (9.8,-0.8) {$c$};
+  \draw[arrow] (qs)--(qa); \draw[arrow] (qa)--(qb); \draw[arrow] (qa)--(qc);
+  \node[below=6mm of qa, align=center, font=\scriptsize] {quotient graph};
+\end{tikzpicture}
+\end{column}
+\begin{column}{0.46\textwidth}
+\begin{enumerate}
+    \item Partition identities into clusters.
+    \item Contract each cluster into one super-node.
+    \item Cluster bid: $B_C=\max_{x\in C} b_x$.
+    \item Cluster demand: at most one item.
+    \item Run GIDM on the quotient graph.
+\end{enumerate}
+\end{column}
+\end{columns}
+\greenblock{Intuition}{Fake identities can exist inside a cluster, but they cannot create extra capacity or extra diffusion positions after contraction.}
 
 
 
