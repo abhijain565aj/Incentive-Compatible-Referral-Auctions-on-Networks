@@ -223,40 +223,88 @@ For one item, welfare is value of the winner. For $k$ items, sum of values of re
 
 % -----------------------------------------------------------------------------
 \begin{frame}{Toy example: VCG can create seller deficit}
-\begin{columns}[T,totalwidth=\textwidth]
-\begin{column}{0.53\textwidth}
 \centering
-\begin{tikzpicture}[scale=0.95]
-  \node[seller] (s) at (0,0) {$s$};
-  \tikzbuyer{a}{1.8,0}{$a$}{$v_a=0$}
-  \tikzbuyer{b}{3.6,0}{$b$}{$v_b=0$}
-  \node[winner] (c) at (5.4,0) {$c$}; \node[below=1mm of c] {\scriptsize $v_c=10$};
-  \draw[arrow] (s)--(a); \draw[arrow] (a)--(b); \draw[arrow] (b)--(c);
-  \node[below=8mm of b, align=center, font=\scriptsize] {A line network: everyone is critical for $c$};
+\begin{tikzpicture}[scale=0.80]
+  \tikzset{
+    smallbuyer/.append style={minimum size=4.8mm, inner sep=0.5pt, font=\tiny},
+    seller/.append style={minimum size=6.8mm}
+  }
+  % -------- (a) social network --------
+  \node[seller] (sL) at (0.0,3.0) {$s$};
+  \node[smallbuyer] (n1) at (-1.2,2.0) {1};
+  \node[smallbuyer] (n3) at (-0.1,2.0) {3};
+  \node[smallbuyer] (n2) at (1.2,2.0) {2};
+  \node[smallbuyer] (n4) at (0.5,2.45) {4};
+  \node[smallbuyer] (n11) at (2.35,2.35) {11};
+  \node[smallbuyer] (n12) at (2.55,1.15) {12};
+  \node[smallbuyer] (n13) at (2.05,0.25) {13};
+  \node[smallbuyer] (n5) at (-0.45,0.95) {5};
+  \node[smallbuyer] (n7) at (0.95,0.95) {7};
+  \node[smallbuyer] (n10) at (-1.2,0.05) {10};
+  \node[smallbuyer] (n8) at (0.1,0.05) {8};
+  \node[smallbuyer] (n6) at (1.25,0.05) {6};
+
+  \draw[thick] (sL)--(n1); \draw[thick] (sL)--(n3); \draw[thick] (sL)--(n2);
+  \draw[thick] (n1)--(n5);
+  \draw[thick] (n3)--(n7);
+  \draw[thick] (n2)--(n4); \draw[thick] (n2)--(n11); \draw[thick] (n2)--(n12); \draw[thick] (n2)--(n7);
+  \draw[thick] (n11)--(n12); \draw[thick] (n12)--(n13);
+  \draw[thick] (n5)--(n7); \draw[thick] (n5)--(n10); \draw[thick] (n5)--(n8);
+  \draw[thick] (n8)--(n6);
+
+  \node[font=\tiny] at (-1.62,1.90) {A};
+  \node[font=\tiny] at (-0.42,1.83) {B};
+  \node[font=\tiny] at (0.78,1.83) {C};
+  \node[font=\tiny] at (-0.92,0.84) {D};
+  \node[font=\tiny] at (0.58,0.81) {E};
+  \node[font=\tiny] at (-1.00,-0.14) {F};
+  \node[font=\tiny] at (0.35,-0.14) {G};
+  \node[font=\tiny] at (2.54,2.18) {H};
+  \node[font=\tiny] at (2.76,1.04) {I};
+  \node[font=\tiny] at (0.70,2.56) {J};
+  \node[font=\tiny] at (1.48,-0.14) {K};
+  \node[font=\tiny] at (2.30,0.13) {L};
+
+  \node[below=2.5mm of n8, font=\scriptsize] {(a) social network};
+
+  % -------- (b) diffusion network --------
+  \node[seller] (sR) at (6.0,3.0) {$s$};
+  \node[smallbuyer] (d1) at (4.7,2.35) {1};
+  \node[smallbuyer] (d3) at (6.0,2.35) {3};
+  \node[smallbuyer] (d2) at (7.4,2.35) {2};
+  \node[smallbuyer] (d5) at (4.9,1.35) {5};
+  \node[smallbuyer] (d7) at (6.0,1.35) {7};
+  \node[smallbuyer] (d10) at (4.2,0.55) {10};
+  \node[smallbuyer] (d8) at (5.3,0.55) {8};
+  \node[smallbuyer] (d6) at (5.3,-0.35) {6};
+  \node[smallbuyer] (d11) at (6.7,0.55) {11};
+  \node[smallbuyer] (d12) at (7.7,0.55) {12};
+  \node[smallbuyer] (d13) at (7.7,-0.35) {13};
+  \node[smallbuyer] (d4) at (8.5,0.75) {4};
+
+  \draw[arrow] (sR)--(d1); \draw[arrow] (sR)--(d3); \draw[arrow] (sR)--(d2);
+  \draw[arrow] (d1)--(d5);
+  \draw[arrow] (d3)--(d7);
+  \draw[arrow] (d2)--(d7); \draw[arrow] (d2)--(d11); \draw[arrow] (d2)--(d12); \draw[arrow] (d2)--(d4);
+  \draw[arrow] (d5)--(d7); \draw[arrow] (d5)--(d10); \draw[arrow] (d5)--(d8);
+  \draw[arrow] (d8)--(d6);
+  \draw[arrow] (d11)--(d12); \draw[arrow] (d12)--(d13);
+
+  \node[font=\tiny] at (4.46,2.17) {A};
+  \node[font=\tiny] at (5.77,2.18) {B};
+  \node[font=\tiny] at (7.16,2.18) {C};
+  \node[font=\tiny] at (4.61,1.20) {D};
+  \node[font=\tiny] at (6.24,1.19) {E};
+  \node[font=\tiny] at (4.48,0.35) {F};
+  \node[font=\tiny] at (5.56,0.35) {G};
+  \node[font=\tiny] at (6.47,0.36) {H};
+  \node[font=\tiny] at (7.96,0.36) {I};
+  \node[font=\tiny] at (8.72,0.66) {J};
+  \node[font=\tiny] at (5.58,-0.56) {K};
+  \node[font=\tiny] at (7.96,-0.56) {L};
+
+  \node[below=2.5mm of d8, font=\scriptsize] {(b) diffusion network};
 \end{tikzpicture}
-\end{column}
-\begin{column}{0.45\textwidth}
-\begin{table}
-\centering
-\small
-\begin{tabular}{lcc}
-\hline
-Mechanism & Winner & Seller revenue \\
-\hline
-Network VCG & $c$ & $-20$ \\
-IDM & $a$ & $0$ \\
-\hline
-\end{tabular}
-\end{table}
-\begin{itemize}
-    \item In VCG, $c$ pays $0$.
-    \item Intermediates $a,b$ each receive reward $10$.
-    \item Revenue $=0-10-10=-20$.
-    \item IDM avoids deficit by not fully chasing efficiency.
-\end{itemize}
-\end{column}
-\end{columns}
-\greenblock{Takeaway}{Diffusion rewards are necessary for reach, but uncontrolled rewards can bankrupt the seller.}
 \end{frame}
 
 % -----------------------------------------------------------------------------
