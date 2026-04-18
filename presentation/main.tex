@@ -71,8 +71,8 @@
 \begin{itemize}
     \item \impterm{Single-item diffusion auctions}: why invite competitors?
     \item \impterm{VCG vs IDM}: efficiency, revenue, deficit
-    \item \impterm{Exploit}: how fake identities can manipulate diffusion rewards
-    \item \impterm{Sybil attacks}: fake identities in the social graph
+    \item \impterm{Sybil attack exploits}: how fake identities can manipulate diffusion rewards
+    % \item \impterm{Sybil attack exploits}: fake identities in the social graph
     \item \impterm{Single-item SP mechanisms}: STM and SCM
     \item \impterm{Our direction}: multi-item Sybil robustness via cluster reduction
 \end{itemize}
@@ -412,20 +412,22 @@ For one item, welfare is value of the winner. For $k$ items, sum of values of re
 \begin{column}{0.48\textwidth}
 \begin{block}{Mechanism-design challenges}
 \begin{itemize}
-    \item Efficiency vs seller revenue
-    \item Rewarding intermediates fairly
-    \item Extending from one item to many items
-    \item Handling strategic graph manipulation
+    \item Efficiency vs seller revenue balance tradeoff (VCG vs IDM)
+    \item Rewarding intermediates fairly (for diffusion)
+    \item Extending from one item to many items (GIDM explained)
+    % \item Handling strategic graph manipulation
 \end{itemize}
 \end{block}
 \end{column}
 \begin{column}{0.48\textwidth}
 \begin{alertblock}{New issue: fake identities}
 \begin{itemize}
-    \item The graph is reported by agents.
+    \item Since we reward diffusion, we indirectly reward creation of fake nodes.
+    % \item The graph is reported by agents.
     \item A buyer can create fake nodes.
     \item Fake nodes may become ``critical''.
-    \item Then diffusion rewards become attack surface.
+    \item Hence fake nodes can earn rewards without contributing value.
+    % \item Then diffusion rewards become attack surface.
 \end{itemize}
 \end{alertblock}
 \end{column}
@@ -436,13 +438,13 @@ For one item, welfare is value of the winner. For $k$ items, sum of values of re
 % \usetikzlibrary{positioning}
 
 \begin{tikzpicture}[node distance=1cm] 
-  \node[good] (reach) {more reach};
-  \node[good, right=of reach] (value) {more value discovered};
+  \node[good] (reach) {diffusion rewarded};
+  \node[good, right=of reach] (value) {more nodes $\Rightarrow$ more reward};
   \node[bad, right=of value] (fake) {fake identities};
-  \node[bad, right=of fake] (reward) {fake rewards};
+%   \node[bad, right=of fake] (reward) {fake rewards};
   \draw[arrow] (reach)--(value); 
   \draw[redarrow] (value)--(fake); 
-  \draw[redarrow] (fake)--(reward);
+%   \draw[redarrow] (fake)--(reward);
 \end{tikzpicture}
 \end{center}
 \end{frame}
@@ -483,7 +485,7 @@ For one item, welfare is value of the winner. For $k$ items, sum of values of re
     \item A real buyer creates fake identities.
     \item Fakes can connect internally or to the creator's neighbors.
     \item No collusion: fakes are controlled by one real buyer.
-    \item Goal: increase allocation chance or payment/reward.
+    \item Goal: exploit mechanism and increase payment/reward.
 \end{itemize}
 \greenblock{In diffusion auctions}{Sybil nodes can manipulate the very paths used to define criticality and rewards.}
 \end{column}
@@ -650,50 +652,59 @@ A mechanism is \impterm{Sybil-proof} if a buyer cannot increase her utility by r
     u_x(\text{identities created by }\sigma_x,\theta_{-x}).
 \]
 }
-\begin{columns}[T,totalwidth=\textwidth]
-\begin{column}{0.48\textwidth}
-\begin{itemize}
-    \item Utility aggregates all identities controlled by $x$.
-    \item Fakes may bid and diffuse strategically.
-\end{itemize}
-\end{column}
-\begin{column}{0.48\textwidth}
-\begin{itemize}
-    \item No collusion between different real buyers.
-    \item This is still a strong requirement.
-\end{itemize}
-\end{column}
-\end{columns}
+% \begin{columns}[T,totalwidth=\textwidth]
+% \begin{column}{0.48\textwidth}
+% \begin{itemize}
+%     \item Utility aggregates all identities controlled by $x$.
+%     \item Fakes may bid and diffuse strategically.
+% \end{itemize}
+% \end{column}
+% \begin{column}{0.48\textwidth}
+% \begin{itemize}
+%     \item No collusion between different real buyers.
+%     \item This is still a strong requirement.
+% \end{itemize}
+% \end{column}
+% \end{columns}
 \end{frame}
 
 % -----------------------------------------------------------------------------
 \section{Single-item Sybil-proof mechanisms}
 
 \begin{frame}{Can single-item diffusion auctions be made Sybil-proof?}
-\begin{columns}[T,totalwidth=\textwidth]
-\begin{column}{0.49\textwidth}
-\begin{block}{STM: Sybil Tax Mechanism}
+% \begin{columns}[T,totalwidth=\textwidth]
+% \begin{column}{0.49\textwidth}
+
+\begin{block} {STM and SCM}
 \begin{itemize}
-    \item Identifies trusted/non-Sybil roots.
-    \item Makes suspicious diffusion less profitable.
-    \item Strong revenue behavior.
-    \item Weaker diffusion incentive to suspicious parts.
+    \item These two algorithms are designed to be Sybil-proof
+    \item They use different approaches to limit the influence of fake nodes
+    \item STM identifies trustworthy "graphical non-Sybil" agents using network structure and applies a price "tax" that neutralizes any financial gain a broker might attempt to manufacture through fake bidders
+    \item SCM improves broker incentives by grouping the network into clusters and pruning redundant edges; this forces the seller to "credit" the presence of real, non-Sybil buyers to specific brokers, creating a profit margin
 \end{itemize}
 \end{block}
-\end{column}
-\begin{column}{0.49\textwidth}
-\begin{block}{SCM: Sybil Cluster Mechanism}
-\begin{itemize}
-    \item Selects/uses a graph structure to limit fake influence.
-    \item Credits reachability to selected real agents.
-    \item Better diffusion motivation.
-    \item Mild welfare/revenue sacrifice.
-\end{itemize}
-\end{block}
-\end{column}
-\end{columns}
-\vspace{2mm}
-\question{Can we transfer this idea to multiple items?}
+% \begin{block}{STM: Sybil Tax Mechanism}
+% \begin{itemize}
+%     \item Identifies trusted/non-Sybil roots.
+%     \item Makes suspicious diffusion less profitable.
+%     \item Strong revenue behavior.
+%     \item Weaker diffusion incentive to suspicious parts.
+% \end{itemize}
+% \end{block}
+% \end{column}
+% \begin{column}{0.49\textwidth}
+% \begin{block}{SCM: Sybil Cluster Mechanism}
+% \begin{itemize}
+%     \item Selects/uses a graph structure to limit fake influence.
+%     \item Credits reachability to selected real agents.
+%     \item Better diffusion motivation.
+%     \item Mild welfare/revenue sacrifice.
+% \end{itemize}
+% \end{block}
+% \end{column}
+% \end{columns}
+% \vspace{2mm}
+% \question{Can we transfer this idea to multiple items?}
 {\tiny Chen et al. propose STM and SCM for the single-item setting and explicitly leave multi-item Sybil-proof diffusion auctions as an open problem.}
 \end{frame}
 
@@ -778,14 +789,14 @@ A mechanism is \impterm{Sybil-proof} if a buyer cannot increase her utility by r
 
 % -----------------------------------------------------------------------------
 \begin{frame}{STM vs SCM: useful intuition for our extension}
-\begin{alertblock}{Lemma-level takeaway from STM}
-When $\Gamma_0=\emptyset$, every buyer except the winner has payment $0$, hence utility $0$ (Lemma 4.2).\
-In short: \impterm{intermediaries/brokers do not benefit from telling auction information in STM}.
-\end{alertblock}
+% \begin{alertblock}{Lemma-level takeaway from STM}
+% When $\Gamma_0=\emptyset$, every buyer except the winner has payment $0$, hence utility $0$ (Lemma 4.2).\
+% In short: \impterm{intermediaries/brokers do not benefit from telling auction information in STM}.
+% \end{alertblock}
 
 \vspace{1mm}
 \begin{enumerate}
-  \item \textbf{STM issue (shared trust, no attribution):} non-Sybil discoveries are pooled in $\Gamma$, so for many brokers the benchmark prices coincide ($p_j=q_j$). Therefore broker reward is $q_j-p_j=0$.
+  \item \textbf{STM issue (less revenue for brokers):} non-Sybil discoveries are pooled in $\Gamma$, so for many brokers the benchmark prices coincide ($p_j=q_j$). Therefore broker reward is $q_j-p_j=0$.
 
   \item \textbf{SCM fix (credit attribution by pruning):} SCM builds $H$, samples a shortest-path tree $T_H$, and removes redundant inter-cluster edges. This makes specific brokers the exclusive gateway for some trustworthy clusters.
 
@@ -895,16 +906,46 @@ In short: \impterm{intermediaries/brokers do not benefit from telling auction in
 \begin{column}{0.46\textwidth}
 \begin{itemize}
     \item GIDM extends IDM to $k$ homogeneous items.
-    \item Each buyer needs at most one item.
+    \item Each buyer can have at most one item.
     \item It uses a winner set and critical diffusion structure.
     \item It preserves IC and IR in the multi-item diffusion model.
-    \item Seller revenue is guaranteed better than no advertising baseline.
+    \item Seller revenue is guaranteed weakly better than no advertising baseline.
+    \item We cannot simply distribute the items one by one using the single-item mechanism.
 \end{itemize}
 \end{column}
 \end{columns}
 \end{frame}
 
-\begin{frame}{Multiple homogeneous items: GIDM}
+\begin{frame}{GIDM in Simple Pseudocode}
+\scriptsize
+\begin{block}{Inputs and state}
+Input: reported profile $\theta'$, optimal allocation tree $T^{opt}(\theta')$, and $K$ items.\\
+State: winner set $W\leftarrow\emptyset$, LIFO stack $Q$, and source map $GetFrom(\cdot)$.
+\end{block}
+
+\begin{enumerate}
+  \item Build $T^{opt}(\theta')$ with item counts $w_i(T^{opt}(\theta'))$. Initialize $W\leftarrow\emptyset$, $Q\leftarrow\emptyset$. Seller distributes items to children of $s$ using $w_i(T^{opt}(\theta'))$ and pushes those children into $Q$.
+  \item While $Q$ is not empty, pop one buyer $i$ and solve the feasible welfare problem $SW_{-C_i^K}$ (remove $C_i^K$, keep already-served critical parents $N_i^{received}$ allocated, and keep unaffected efficient winners allocated).
+  \item If $i$ receives an item in that feasible allocation, add $i$ to $W$ and set $GetFrom(i)$: if $i$ keeps her own item, $GetFrom(i)=i$; otherwise take one removable item from her subtree and update the path counts.
+  \item For each child $j$ of $i$, if $w_j(T^{opt}(\theta'))>0$, pass these items to $j$ and push $j$ into $Q$.
+\end{enumerate}
+
+\begin{block}{Payment rule}
+{\small
+\[
+p_i(\theta')=
+\begin{cases}
+SW_{-D_i}-\big(SW_{-C_i^K}-v_i'\big), & i\in W,\\
+SW_{-D_i}-SW_{-C_i^K}, & i\in \bigcup_{j\in W}P_j(\theta')\setminus W,\\
+0, & \text{otherwise.}
+\end{cases}
+\]
+where $D_i=\{i\}\cup C_i(\theta')$.
+}
+\end{block}
+\end{frame}
+
+\begin{frame}{Multiple homogeneous items: GIDM Working Example (k = 2 items)}
 \begin{columns}[T,totalwidth=\textwidth]
 \begin{column}{0.52\textwidth}
 \begin{figure}[htbp]
@@ -1309,10 +1350,12 @@ In short: \impterm{intermediaries/brokers do not benefit from telling auction in
 \end{column}
 \begin{column}{0.42\textwidth}
 \begin{itemize}
-    \item GIDM treats reported identities as separate buyers.
-    \item Fake nodes can alter critical paths.
-    \item With $k>1$, fake identities can also affect allocation capacity and price thresholds.
-\end{itemize}
+    \item Consider node C's Sybil attack: create fake node $C'$ with bid $18.9$
+    \item Original Payment for C is $35 - 36 = -1$
+    \item New Payment for C is $35 - 18.9 - 19 = -2.9$
+    \item Hence C is able to exploit the mechanism via Sybil attack, increasing her utility from $1$ to $2.9$.
+    % \item GIDM winner set becomes $\{H,K\}$, with $C
+ \end{itemize}
 \begin{alertblock}{Key observation}
 Since $k=1$ is a special case, any multi-item extension that contains IDM-like behavior is not automatically Sybil-proof.
 \end{alertblock}
@@ -1347,41 +1390,44 @@ Since $k=1$ is a special case, any multi-item extension that contains IDM-like b
 \section{Our mechanism}
 
 \begin{frame}{SC-GIDM: Sybil-Cluster GIDM}
-\begin{columns}[T,totalwidth=\textwidth]
-\begin{column}{0.52\textwidth}
-\centering
-\begin{tikzpicture}[scale=0.78]
-  \node[seller] (s) at (0,0) {$s$};
-  \node[buyer] (a) at (1.5,0) {$a$};
-  \node[sybil] (a1) at (3.0,0.8) {$a_1'$};
-  \node[sybil] (a2) at (3.0,-0.8) {$a_2'$};
-  \node[buyer] (b) at (4.6,0.8) {$b$};
-  \node[buyer] (c) at (4.6,-0.8) {$c$};
-  \draw[arrow] (s)--(a); \draw[redarrow] (a)--(a1); \draw[redarrow] (a)--(a2);
-  \draw[arrow] (a1)--(b); \draw[arrow] (a2)--(c);
-  \begin{scope}[on background layer]
-    \node[cluster, fit=(a) (a1) (a2)] (cl) {};
-  \end{scope}
-  \node at (5.7,0) {$\Rightarrow$};
-  \node[seller] (qs) at (6.7,0) {$s$};
-  \node[buyer] (qa) at (8.2,0) {$C_a$};
-  \node[buyer] (qb) at (9.8,0.8) {$b$};
-  \node[buyer] (qc) at (9.8,-0.8) {$c$};
-  \draw[arrow] (qs)--(qa); \draw[arrow] (qa)--(qb); \draw[arrow] (qa)--(qc);
-  \node[below=6mm of qa, align=center, font=\scriptsize] {quotient graph};
-\end{tikzpicture}
-\end{column}
-\begin{column}{0.46\textwidth}
-\begin{enumerate}
-    \item Partition identities into clusters.
-    \item Contract each cluster into one super-node.
-    \item Cluster bid: $B_C=\max_{x\in C} b_x$.
-    \item Cluster demand: at most one item.
-    \item Run GIDM on the quotient graph.
-\end{enumerate}
-\end{column}
-\end{columns}
-\greenblock{Intuition}{Fake identities can exist inside a cluster, but they cannot create extra capacity or extra diffusion positions after contraction.}
+% \begin{columns}[T,totalwidth=\textwidth]
+% \begin{column}{0.52\textwidth}
+% \centering
+% \begin{tikzpicture}[scale=0.78]
+%   \node[seller] (s) at (0,0) {$s$};
+%   \node[buyer] (a) at (1.5,0) {$a$};
+%   \node[sybil] (a1) at (3.0,0.8) {$a_1'$};
+%   \node[sybil] (a2) at (3.0,-0.8) {$a_2'$};
+%   \node[buyer] (b) at (4.6,0.8) {$b$};
+%   \node[buyer] (c) at (4.6,-0.8) {$c$};
+%   \draw[arrow] (s)--(a); \draw[redarrow] (a)--(a1); \draw[redarrow] (a)--(a2);
+%   \draw[arrow] (a1)--(b); \draw[arrow] (a2)--(c);
+%   \begin{scope}[on background layer]
+%     \node[cluster, fit=(a) (a1) (a2)] (cl) {};
+%   \end{scope}
+%   \node at (5.7,0) {$\Rightarrow$};
+%   \node[seller] (qs) at (6.7,0) {$s$};
+%   \node[buyer] (qa) at (8.2,0) {$C_a$};
+%   \node[buyer] (qb) at (9.8,0.8) {$b$};
+%   \node[buyer] (qc) at (9.8,-0.8) {$c$};
+%   \draw[arrow] (qs)--(qa); \draw[arrow] (qa)--(qb); \draw[arrow] (qa)--(qc);
+%   \node[below=6mm of qa, align=center, font=\scriptsize] {quotient graph};
+% \end{tikzpicture}
+% \end{column}
+% \begin{column}{0.46\textwidth}
+% \begin{enumerate}
+%     \item Partition identities into clusters.
+%     \item Contract each cluster into one super-node.
+%     \item Cluster bid: $B_C=\max_{x\in C} b_x$.
+%     \item Cluster demand: at most one item.
+%     \item Run GIDM on the quotient graph.
+% \end{enumerate}
+% \end{column}
+% \end{columns}
+% \greenblock{Intuition}{Fake identities can exist inside a cluster, but they cannot create extra capacity or extra diffusion positions after contraction.}
+
+
+
 \end{frame}
 
 % -----------------------------------------------------------------------------
@@ -1435,6 +1481,13 @@ for winning clusters, and
 for intermediary clusters. (Sign convention follows GIDM transfer notation.)
 \end{block}
 \end{frame}
+
+\begin{frame}{SC-GIDM: Sybil-Proofness Analysis}\small\begin{block}{Sybil-Proof Logic and Structural Invariance}
+    \begin{itemize}\item \textbf{Assumption of $\Gamma_0 $}: The mechanism assumes no initial or external non-Sybil information; However in case of extra information provided, we get more reliable clusters.
+        \item \textbf{Cluster Integrity}: Fake nodes created by an attacker cannot spawn new macro-clusters; according to the design of the clusters, any Sybil node remains dominated by its creator and trapped within the original cluster $V_i$.
+        \item \textbf{Macro-Topology Stability}: Since the set of clusters $\mathcal{C}$ and the edges in $G_{cluster}$ are invariant to Sybil identities, running GIDM on this abstraction guarantees the mechanism is Sybil-proof.\end{itemize}\end{block}
+        \begin{block}{Intra-Cluster Settlement and Neutralization}
+            \begin{itemize}\item \textbf{Winner Designation}: If a cluster $V_i$ is a winner, the item is physically assigned to the highest bidder $j \in V_i$ ($v'_j = v^*_{V_i}$), while the payment responsibility is handled by the root node.\item \textbf{Zero Reward for Internal Sybils}: Creating fake nodes inside a cluster provides no increase in payment or intermediary rewards, as macro-social welfare calculations are oblivious to internal cluster volume.\end{itemize}\end{block}\end{frame}
 
 % -----------------------------------------------------------------------------
 \begin{frame}{Assumptions: what exactly are we proving?}
