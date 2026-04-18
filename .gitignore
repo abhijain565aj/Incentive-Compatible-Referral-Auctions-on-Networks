@@ -10,7 +10,7 @@ presentation/*
 report/*
 !report/report.tex
 
-final_report/*
+finalReport/*
 
 simulator/results/*
 __pycache__/
