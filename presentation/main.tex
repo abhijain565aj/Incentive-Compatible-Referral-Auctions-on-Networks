@@ -169,12 +169,14 @@ For one item, welfare is value of the winner. For $k$ items, sum of values of re
  
 % remove this or correct this below 
 \begin{center}
-\begin{tikzpicture}
-  \node[idea] (ic) at (0,0) {truthful bids};
-  \node[idea] (diff) at (4,0) {full diffusion};
-  \node[idea] (rev) at (8,0) {non-negative revenue};
-  \node[idea] (rob) at (12,0) {Sybil robustness};
-  \draw[arrow] (ic)--(diff); \draw[arrow] (diff)--(rev); \draw[arrow] (rev)--(rob);
+\begin{tikzpicture}[node distance=1cm]
+  \node[idea] (ic) {truthful bids};
+  \node[idea, right=of ic] (diff) {full diffusion};
+  \node[idea, right=of diff] (rev) {non-negative revenue};
+  \node[idea, right=of rev] (rob) {Sybil robustness};
+  \draw[arrow] (ic)--(diff); 
+  \draw[arrow] (diff)--(rev); 
+  \draw[arrow] (rev)--(rob);
 \end{tikzpicture}
 \end{center}
 \end{frame}
@@ -348,12 +350,17 @@ For one item, welfare is value of the winner. For $k$ items, sum of values of re
 \end{columns}
 \vspace{3mm}
 \begin{center}
-\begin{tikzpicture}
-  \node[good] (reach) at (0,0) {more reach};
-  \node[good] (value) at (3,0) {more value discovered};
-  \node[bad] (fake) at (6,0) {fake identities};
-  \node[bad] (reward) at (9.1,0) {fake rewards};
-  \draw[arrow] (reach)--(value); \draw[redarrow] (value)--(fake); \draw[redarrow] (fake)--(reward);
+% Make sure to include this in your preamble:
+% \usetikzlibrary{positioning}
+
+\begin{tikzpicture}[node distance=1cm] 
+  \node[good] (reach) {more reach};
+  \node[good, right=of reach] (value) {more value discovered};
+  \node[bad, right=of value] (fake) {fake identities};
+  \node[bad, right=of fake] (reward) {fake rewards};
+  \draw[arrow] (reach)--(value); 
+  \draw[redarrow] (value)--(fake); 
+  \draw[redarrow] (fake)--(reward);
 \end{tikzpicture}
 \end{center}
 \end{frame}
@@ -407,23 +414,63 @@ For one item, welfare is value of the winner. For $k$ items, sum of values of re
 \begin{columns}[T,totalwidth=\textwidth]
 \begin{column}{0.52\textwidth}
 \centering
-\begin{tikzpicture}[scale=0.9]
-  \node[seller] (s) at (0,0) {$s$};
-  \node[buyer] (a) at (1.6,0) {$a$};
-  \node[sybil] (a1) at (3.2,0) {$a'$};
-  \node[buyer] (b) at (4.8,0) {$b$};
-  \node[winner] (c) at (6.4,0) {$c$};
-  \draw[arrow] (s)--(a); \draw[redarrow] (a)--(a1); \draw[arrow] (a1)--(b); \draw[arrow] (b)--(c);
-  \node[below=1mm of a] {\scriptsize $0$};
-  \node[below=1mm of a1] {\scriptsize fake};
-  \node[below=1mm of b] {\scriptsize $0$};
-  \node[below=1mm of c] {\scriptsize $10$};
-  \begin{scope}[on background layer]
-    \node[cluster, fit=(a) (a1)] {};
-  \end{scope}
-\end{tikzpicture}
+  \begin{figure}
+    \centering
+    \begin{tikzpicture}[scale=1.00]
+      \tikzset{
+        smallbuyer/.append style={minimum size=4.8mm, inner sep=0.5pt, font=\tiny},
+        sybil/.append style={minimum size=4.8mm, inner sep=0.5pt, font=\tiny},
+        seller/.append style={minimum size=6.8mm}
+      }
+            % -------- (b) diffusion network --------
+      \node[seller] (sR) at (6.0,3.5) {$s$};
+      \node[smallbuyer] (d1) at (4.7,2.35) {1};
+      \node[smallbuyer] (d3) at (6.0,2.35) {3};
+      \node[smallbuyer] (d2) at (7.4,2.35) {2};
+      \node[sybil] (d2') at (7.5,1.45) {2};
+      \node[smallbuyer] (d5) at (4.9,1.35) {5};
+      \node[smallbuyer] (d7) at (6.0,1.35) {7};
+      \node[smallbuyer] (d10) at (4.2,0.55) {10};
+      \node[smallbuyer] (d8) at (5.3,0.55) {8};
+      \node[smallbuyer] (d6) at (5.3,-0.35) {6};
+      \node[smallbuyer] (d11) at (6.7,0.55) {11};
+      \node[smallbuyer] (d12) at (7.7,0.55) {12};
+      \node[smallbuyer] (d13) at (7.7,-0.35) {13};
+      \node[smallbuyer] (d4) at (8.5,0.75) {4};
+
+      \draw[arrow] (sR)--(d1); \draw[arrow] (sR)--(d3); \draw[arrow] (sR)--(d2);
+      \draw[arrow] (d1)--(d5);
+      \draw[arrow] (d3)--(d7);
+      \draw[arrow] (d2)--(d7); \draw[arrow] (d2)--(d11); 
+      \draw[arrow] (d2)--(d2');
+      \draw[arrow] (d2')--(d12);
+      \draw[arrow] (d2)--(d4);
+      \draw[arrow] (d5)--(d7); \draw[arrow] (d5)--(d10); \draw[arrow] (d5)--(d8);
+      \draw[arrow] (d8)--(d6);
+      \draw[arrow] (d11)--(d12); \draw[arrow] (d12)--(d13);
+
+      \node[font=\tiny] at (4.26,2.17) {A};
+      \node[font=\tiny] at (5.57,2.18) {B};
+      \node[font=\tiny] at (7.70,2.25) {C};
+      \node[font=\tiny ,color=red] at (7.20,1.25) {C'};
+      \node[font=\tiny] at (4.51,1.20) {D};
+      \node[font=\tiny] at (6.40,1.19) {E};
+      \node[font=\tiny] at (4.55,0.35) {F};
+      \node[font=\tiny] at (5.65,0.35) {G};
+      \node[font=\tiny] at (6.30,0.36) {H};
+      \node[font=\tiny] at (8.05,0.36) {I};
+      \node[font=\tiny] at (8.85,0.66) {J};
+      \node[font=\tiny] at (5.65,-0.56) {K};
+      \node[font=\tiny] at (8.05,-0.56) {L};
+
+      \begin{scope}[on background layer]
+        \node[cluster, fit=(d2) (d2')] {};
+      \end{scope}
+  \end{tikzpicture}
+  \end{figure}
 \end{column}
 \begin{column}{0.46\textwidth}
+  {\large TODO: Update explaination}
 \begin{itemize}
     \item Without fake $a'$: $a$ and $b$ are critical for $c$.
     \item With fake $a'$: $a'$ also appears critical.
@@ -441,33 +488,61 @@ VCG rewards graph positions. Fake graph positions create fake rewards.
 \begin{frame}{Sybil attack on IDM: changing the critical sequence}
 \begin{columns}[T,totalwidth=\textwidth]
 \begin{column}{0.55\textwidth}
-\centering
-\begin{tikzpicture}[scale=0.86]
-  \node[seller] (s) at (0,0) {$s$};
-  \node[buyer] (a) at (1.8,0) {$a$};
-  \node[buyer] (b) at (3.6,0.9) {$b$};
-  \node[winner] (c) at (3.6,-0.9) {$c$};
-  \draw[arrow] (s)--(a); \draw[arrow] (a)--(b); \draw[arrow] (a)--(c);
-  \node[below=1mm of a] {\scriptsize $20$};
-  \node[below=1mm of b] {\scriptsize $50$};
-  \node[below=1mm of c] {\scriptsize $90$};
-  \node at (5.0,0) {$\Rightarrow$};
-  \node[seller] (s2) at (6.2,0) {$s$};
-  \node[buyer] (a2) at (7.8,0) {$a$};
-  \node[buyer] (b2) at (9.6,1.0) {$b$};
-  \node[winner] (c2) at (9.6,-1.0) {$c$};
-  \node[sybil] (a1) at (8.9,-1.0) {$a'$};
-  \draw[arrow] (s2)--(a2); \draw[arrow] (a2)--(b2); \draw[redarrow] (a2)--(a1); \draw[arrow] (a1)--(c2);
-  \node[below=1mm of a2] {\scriptsize $20$};
-  \node[below=1mm of b2] {\scriptsize $50$};
-  \node[below=1mm of a1] {\scriptsize fake $89$};
-  \node[below=1mm of c2] {\scriptsize $90$};
-  \begin{scope}[on background layer]
-    \node[cluster, fit=(a2) (a1)] {};
-  \end{scope}
-\end{tikzpicture}
+  \begin{figure}
+    \centering
+        \begin{tikzpicture}[scale=1.00]
+      \tikzset{
+        smallbuyer/.append style={minimum size=4.8mm, inner sep=0.5pt, font=\tiny},
+        sybil/.append style={minimum size=4.8mm, inner sep=0.5pt, font=\tiny},
+        seller/.append style={minimum size=6.8mm}
+      }
+            % -------- (b) diffusion network --------
+      \node[seller] (sR) at (6.0,3.5) {$s$};
+      \node[smallbuyer] (d1) at (4.7,2.35) {1};
+      \node[smallbuyer] (d3) at (6.0,2.35) {3};
+      \node[smallbuyer] (d2) at (7.4,2.35) {2};
+      \node[sybil] (d2') at (8.4,2.35) {12.9};
+      \node[smallbuyer] (d5) at (4.9,1.35) {5};
+      \node[smallbuyer] (d7) at (6.0,1.35) {7};
+      \node[smallbuyer] (d10) at (4.2,0.55) {10};
+      \node[smallbuyer] (d8) at (5.3,0.55) {8};
+      \node[smallbuyer] (d6) at (5.3,-0.35) {6};
+      \node[smallbuyer] (d11) at (6.7,0.55) {11};
+      \node[smallbuyer] (d12) at (7.7,0.55) {12};
+      \node[smallbuyer] (d13) at (7.7,-0.35) {13};
+      \node[smallbuyer] (d4) at (8.5,0.75) {4};
+
+      \draw[arrow] (sR)--(d1); \draw[arrow] (sR)--(d3); \draw[arrow] (sR)--(d2);
+      \draw[arrow] (d1)--(d5);
+      \draw[arrow] (d3)--(d7);
+      \draw[arrow] (d2)--(d7); \draw[arrow] (d2)--(d11); \draw[arrow] (d2)--(d12); \draw[arrow] (d2)--(d4);
+      \draw[arrow] (d2)--(d2');
+      \draw[arrow] (d5)--(d7); \draw[arrow] (d5)--(d10); \draw[arrow] (d5)--(d8);
+      \draw[arrow] (d8)--(d6);
+      \draw[arrow] (d11)--(d12); \draw[arrow] (d12)--(d13);
+
+      \node[font=\tiny] at (4.26,2.17) {A};
+      \node[font=\tiny] at (5.57,2.18) {B};
+      \node[font=\tiny] at (7.07,2.25) {C};
+      \node[font=\tiny , color=red] at (8.10,2.15) {C'};
+      \node[font=\tiny] at (4.51,1.20) {D};
+      \node[font=\tiny] at (6.40,1.19) {E};
+      \node[font=\tiny] at (4.55,0.35) {F};
+      \node[font=\tiny] at (5.65,0.35) {G};
+      \node[font=\tiny] at (6.30,0.36) {H};
+      \node[font=\tiny] at (8.05,0.36) {I};
+      \node[font=\tiny] at (8.85,0.66) {J};
+      \node[font=\tiny] at (5.65,-0.56) {K};
+      \node[font=\tiny] at (8.05,-0.56) {L};
+
+      \begin{scope}[on background layer]
+        \node[cluster, fit=(d2) (d2')] {};
+      \end{scope}
+    \end{tikzpicture}
+  \end{figure}
 \end{column}
 \begin{column}{0.43\textwidth}
+  {\large TODO: Update explaination}
 \begin{itemize}
     \item IDM uses critical sequence and benchmark bids.
     \item A fake high-bid neighbor can raise the benchmark seen by the winner.
