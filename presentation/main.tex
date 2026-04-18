@@ -71,6 +71,7 @@
 \begin{itemize}
     \item \impterm{Single-item diffusion auctions}: why invite competitors?
     \item \impterm{VCG vs IDM}: efficiency, revenue, deficit
+    \item \impterm{Exploit}: how fake identities can manipulate diffusion rewards
     \item \impterm{Sybil attacks}: fake identities in the social graph
     \item \impterm{Single-item SP mechanisms}: STM and SCM
     \item \impterm{Our direction}: multi-item Sybil robustness via cluster reduction
@@ -82,13 +83,13 @@
   \node[seller] (s) at (0,1.4) {$s$};
   \node[buyer] (a) at (1.4,2.3) {$a$};
   \node[buyer] (b) at (1.4,0.5) {$b$};
-  \node[buyer] (c) at (3.0,2.3) {$c$};
-  \node[buyer] (d) at (3.0,0.5) {$d$};
-  \node[sybil] (x) at (4.4,1.4) {$x'$};
+  \node[sybil] (a1) at (3.0,2.3) {$a'$};
+  \node[buyer] (c) at (3.0,0.5) {$c$};
+  \node[buyer] (x) at (4.4,1.4) {$x$};
   \draw[arrow] (s)--(a); \draw[arrow] (s)--(b);
-  \draw[arrow] (a)--(c); \draw[arrow] (b)--(d);
-  \draw[redarrow] (c)--(x);
-  \node[below=5mm of d, align=center, font=\scriptsize] {real network $+$ fake identity};
+  \draw[redarrow] (a)--(a1); \draw[arrow] (b)--(c);
+  \draw[arrow] (a1)--(x);
+  \node[below=5mm of c, align=center, font=\scriptsize] {real network $+$ fake identity};
 \end{tikzpicture}
 \end{column}
 \end{columns}
@@ -165,6 +166,8 @@ For one item, welfare is value of the winner. For $k$ items, sum of values of re
 \end{column}
 \end{columns}
 \vspace{3mm}
+ 
+% remove this or correct this below 
 \begin{center}
 \begin{tikzpicture}
   \node[idea] (ic) at (0,0) {truthful bids};
@@ -178,6 +181,10 @@ For one item, welfare is value of the winner. For $k$ items, sum of values of re
 
 % -----------------------------------------------------------------------------
 \begin{frame}{Two single-item mechanisms: VCG and IDM}
+
+% add that in idm not necessary that highest bidder wins 
+
+
 \begin{columns}[T,totalwidth=\textwidth]
 \begin{column}{0.49\textwidth}
 \begin{block}{Network VCG}
@@ -471,31 +478,93 @@ A mechanism is \impterm{Sybil-proof} if a buyer cannot increase her utility by r
 \end{frame}
 
 % -----------------------------------------------------------------------------
+\begin{frame}{STM algorithm (single-item): pseudocode}
+\scriptsize
+\begin{enumerate}
+  \item Given reported type profile $\theta'$, compute reachable reported graph $G_s(\theta')$ and graphical non-Sybil set $\Gamma(\theta')$. Write them as $G_s$ and $\Gamma$.
+  \item Find highest-bid reachable buyer
+  \[
+    x^* \in \arg\max_{x \in V(G_s)} v_x'.
+  \]
+  \item Compute dominator sequence
+  \[
+    C_{x^*}=\{c_0=s,c_1,\ldots,c_\ell=x^*\},\qquad c_j=\mathrm{idom}(c_{j+1}),\;0\le j<\ell.
+  \]
+  \item Define buying and selling prices:
+  \[
+    p_j = \max\!\left[V(G_s)\setminus \alpha(c_j)\right],\quad 1<j\le \ell,
+  \]
+  \[
+    q_j = \max\!\left[(V(G_s)\setminus \alpha(c_j))\cup \beta_j\right],\quad 1\le j<\ell,
+  \]
+  where
+  \[
+    \beta_j = \{x\mid \exists y\ne c_j,\; y\in (\alpha(c_j)\setminus\alpha(c_{j+1}))\cap\Gamma,\; x\in\alpha(y)\}.
+  \]
+  \item Pick the smallest index $d$ such that $v'_{c_d}\ge q_d$ for $1\le d<\ell$. If none exists, set $d=\ell$. Allocate item to $c_d$:
+  \[
+    \pi_{c_d}(\theta')=1.
+  \]
+  \item Payments:
+  \[
+    t_{c_j}(\theta')=
+    \begin{cases}
+      p_j-q_j, & 1\le j<d,\\
+      p_j, & j=d.
+    \end{cases}
+  \]
+  All other buyers have zero allocation and zero payment.
+\end{enumerate}
+\end{frame}
+
+% -----------------------------------------------------------------------------
+\begin{frame}{SCM algorithm (single-item): pseudocode}
+\scriptsize
+\begin{enumerate}
+  \item Given reported type profile $\theta'$ as input, reconstruct a social graph on non-Sybil agents:
+  \[
+    H=(\Gamma(\theta'),E(H)),
+  \]
+  \[
+    E(H)=\{(x,y)\mid \exists i\in K_x,\; \exists j\in K_y\;\text{s.t.}\; (i,j)\in E(G_s(\theta'))\}.
+  \]
+  \item Sample a random shortest-path tree of $H$ with equal probability, denoted by $T_H$.
+  \item Construct a subgraph $\hat G$ of $G_s(\theta')$ using $T_H$:
+  \[
+    \hat G=(V(G_s(\theta')),E(\hat G)),
+  \]
+  \[
+    E(\hat G)=E(G_s(\theta'))\setminus\{(i,j)\mid i\in K_x,\; j\in K_y,\; (x,y)\in E(H)\setminus E(T_H)\}.
+  \]
+  Equivalently, delete edge $(i,j)$ if $i\in K_x$, $j\in K_y$, $x\ne y$, and $(x,y)\notin T_H$.
+  \item Run STM on the modified inputs
+  \[
+    G_s=\hat G,\qquad \Gamma=\Gamma(\theta')
+  \]
+  instead of
+  \[
+    G_s=G_s(\theta'),\qquad \Gamma=\Gamma(\theta').
+  \]
+\end{enumerate}
+\end{frame}
+
+% -----------------------------------------------------------------------------
 \begin{frame}{STM vs SCM: useful intuition for our extension}
-\centering
-\begin{tikzpicture}[scale=0.95]
-  \node[idea, minimum width=3.2cm, minimum height=1.2cm] (stm) at (0,0) {\textbf{STM}\\[1mm]\scriptsize tax suspicious paths};
-  \node[idea, minimum width=3.2cm, minimum height=1.2cm] (scm) at (4.3,0) {\textbf{SCM}\\[1mm]\scriptsize group/control Sybil influence};
-  \node[idea, minimum width=3.2cm, minimum height=1.2cm] (gidm) at (8.6,0) {\textbf{GIDM}\\[1mm]\scriptsize multiple items};
-  \draw[arrow] (stm)--(scm);
-  \draw[arrow] (scm)--(gidm);
-  \node[below=5mm of scm, align=center, font=\small] {Our project uses the \impterm{cluster intuition}:\ contract fake identities before running a multi-item mechanism.};
-\end{tikzpicture}
-\vspace{4mm}
-\begin{table}
-\centering
-\small
-\begin{tabular}{lccc}
-\hline
-Mechanism & Single item & Sybil-proof & Multiple items \\
-\hline
-IDM & yes & no & no \\
-STM/SCM & yes & yes & no \\
-GIDM & no & no & yes \\
-Our SC-GIDM & no & under assumptions & yes \\
-\hline
-\end{tabular}
-\end{table}
+\begin{alertblock}{Lemma-level takeaway from STM}
+When $\Gamma_0=\emptyset$, every buyer except the winner has payment $0$, hence utility $0$ (Lemma 4.2).\
+In short: \impterm{intermediaries/brokers do not benefit from telling auction information in STM}.
+\end{alertblock}
+
+\vspace{1mm}
+\begin{enumerate}
+  \item \textbf{STM issue (shared trust, no attribution):} non-Sybil discoveries are pooled in $\Gamma$, so for many brokers the benchmark prices coincide ($p_j=q_j$). Therefore broker reward is $q_j-p_j=0$.
+
+  \item \textbf{SCM fix (credit attribution by pruning):} SCM builds $H$, samples a shortest-path tree $T_H$, and removes redundant inter-cluster edges. This makes specific brokers the exclusive gateway for some trustworthy clusters.
+
+  \item \textbf{Payment impact:} after pruning, those trustworthy buyers contribute to $q_j$ but are not available in $p_j$, creating a positive gap ($q_j>p_j$). Brokers can now get positive utility, so diffusion incentives are stronger than in STM.
+\end{enumerate}
+
+\greenblock{Interpretation}{STM mainly taxes suspicious influence; SCM preserves Sybil-proofness while restoring broker incentives via structure-aware edge removal.}
 \end{frame}
 
 % -----------------------------------------------------------------------------
