@@ -1,460 +1,559 @@
+
 \documentclass[11pt]{article}
 \usepackage[a4paper,margin=1in]{geometry}
 \usepackage{amsmath,amssymb,amsthm,mathtools}
-\usepackage{booktabs,longtable,array,tabularx}
-\usepackage{enumitem}
-\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
 \usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{tikz}
+\usepackage{subcaption}
+\usepackage{xcolor}
+\usepackage{array}
+\usepackage{float}
 \usepackage{microtype}
 \usepackage{titlesec}
 \usepackage{fancyhdr}
-\usepackage{lastpage}
-\usepackage{listings}
-
-\definecolor{accent}{HTML}{1F4E79}
-\definecolor{soft}{HTML}{EEF5FB}
-\definecolor{dark}{HTML}{1F2937}
-\hypersetup{colorlinks=true,linkcolor=accent,citecolor=accent,urlcolor=accent}
-\titleformat{\section}{\Large\bfseries\color{accent}}{\thesection}{0.7em}{}
-\titleformat{\subsection}{\large\bfseries\color{dark}}{\thesubsection}{0.7em}{}
+\hypersetup{colorlinks=true,linkcolor=blue!60!black,citecolor=blue!60!black,urlcolor=blue!60!black}
 \pagestyle{fancy}
+\setlength{\headheight}{14pt}
 \fancyhf{}
-\lhead{Referral Auctions on Networks}
-\rhead{Abhi Jain, Harshit Raj, Ridam Jan}
-\cfoot{\thepage/\pageref{LastPage}}
+\lhead{Sybil-Robust Multi-Item Diffusion Auctions}
+\rhead{\thepage}
 
-\newtheorem{definition}{Definition}
-\newtheorem{proposition}{Proposition}
-\newtheorem{researchq}{Research Question}
-\newtheorem{conjecture}{Conjecture}
+\titleformat{\section}{\large\bfseries\color{blue!55!black}}{\thesection}{0.6em}{}
+\titleformat{\subsection}{\normalsize\bfseries\color{blue!45!black}}{\thesubsection}{0.6em}{}
 
-\newcommand{\N}{\mathcal{N}}
-\newcommand{\A}{\mathcal{A}}
-\newcommand{\R}{\mathbb{R}}
-\newcommand{\eps}{\varepsilon}
-\newcommand{\argmax}{\operatorname*{arg\,max}}
-\newcommand{\Rev}{\operatorname{Rev}}
-\newcommand{\SW}{\operatorname{SW}}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{assumption}[theorem]{Assumption}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
 
 \begin{document}
+\pagenumbering{gobble}
 
 \begin{titlepage}
-    \centering
-    \vspace*{1.3cm}
-    {\Huge \bfseries Incentive-Compatible Referral Auctions on Networks\\[0.2cm]}
-    {\Large A Theory-First Project Report and Experiment Plan\\[0.8cm]}
-    \vspace{0.5cm}
-    \begin{tabular}{rl}
-        Team: & Abhi Jain (23b0903), Harshit Raj (23b0950), Ridam Jan (23b1049)\\
-        Theme: & Mechanism design in social networks and referral auctions\\
-        Main base paper: & Li, Hao, Zhao, Zhou, \emph{Mechanism Design in Social Networks}\\
-    \end{tabular}
-    \vfill
-    \fbox{\begin{minipage}{0.86\textwidth}
-    \textbf{Core research stance.} We do not treat the project as simply implementing known mechanisms. The implementation is a controlled environment for testing theoretical hypotheses around robustness, non-i.i.d. values, topology, and reward/revenue tradeoffs. The strongest candidate contribution is a small theorem or counterexample in one restricted but nontrivial setting, supported by systematic simulations.
-    \end{minipage}}
-    \vfill
-    {\large \today}
+\centering
+\vspace*{1.5cm}
+{\Huge \bfseries Sybil-Robust Multi-Item Diffusion Auctions via Cluster Reduction\par}
+\vspace{0.6cm}
+{\Large Final Project Report\par}
+\vspace{1.2cm}
+{\large Based on: \emph{Mechanism Design in Social Networks}, \emph{Selling Multiple Items via Social Networks}, and \emph{Sybil-Proof Diffusion Auction in Social Networks}\par}
+\vspace{1.4cm}
+\begin{tabular}{>{\bfseries}p{3.2cm} p{9.0cm}}
+Team: & Abhi Jain, Harshit Raj, Ridam Jan \\
+Course theme: & Mechanism design over social / referral networks \\
+Core contribution: & Extending the Sybil-proof direction from single-item to multi-item auctions \\
+\end{tabular}
+\vfill
+\begin{minipage}{0.88\textwidth}
+\small
+\textbf{Abstract.}
+Diffusion auctions over social networks ask buyers not only to bid, but also to forward auction information to neighbours.
+The single-item paper of Li et al. introduced IDM and showed that diffusion incentives can be made truthful without running a seller deficit.
+The multi-item paper of Zhao et al. generalised this idea to homogeneous multi-unit sales through GIDM.
+The Sybil-proof paper of Chen et al. then showed that false identities fundamentally break ordinary diffusion auctions and left the multi-item Sybil-proof case as open future work.
+Motivated by that gap, we study a restricted but rigorous extension: homogeneous items, single-unit demand, no collusion, and a certified non-Sybil root for each Sybil cluster.
+We propose \emph{SC-GIDM}: contract each Sybil cluster to its certified root and run GIDM on the quotient graph.
+We prove that every Sybil attack induces only a feasible deviation by the cluster root on the quotient graph; therefore SC-GIDM inherits individual rationality, diffusion incentive compatibility, and weak budget balance from GIDM and is Sybil-proof against identity splitting under our assumptions.
+We also provide a canonical attack instance where identity-level GIDM gives the attacker a utility gain of \(22\), while SC-GIDM removes the gain.
+Finally, simulations on random trees and Erd\H{o}s-R\'enyi graphs show that attacked GIDM increasingly allocates items to fake identities and loses real social welfare as the number of Sybils grows, while SC-GIDM restores the no-attack welfare curve and eliminates fake winners.
+\end{minipage}
+\vfill
+{\large April 2026\par}
 \end{titlepage}
+\clearpage
+\pagenumbering{arabic}
 
-\tableofcontents
-\newpage
+\section{Introduction}
 
-\section{Executive Summary}
+Classical auction theory assumes that the seller can directly reach all buyers.
+Diffusion auctions break that assumption: the seller knows only a local neighbourhood and must rely on buyers to propagate the auction information through a social graph.
+Li et al.\ introduced the \emph{information diffusion mechanism} (IDM) for a single item and proved that truthful bidding together with full information diffusion is a dominant strategy; they also showed that extending VCG to the network setting may create a seller deficit.
+Zhao et al.\ extended the model to multiple homogeneous items with unit-demand buyers and proposed GIDM, which remains incentive compatible and individually rational while guaranteeing seller revenue no worse than selling only to the seller's direct neighbours.
+Chen et al.\ then observed that ordinary diffusion auctions are vulnerable to false-name/Sybil attacks and developed the first Sybil-proof single-item mechanisms, STM and SCM.
 
-Classical auction theory assumes that the seller can directly reach all bidders. Diffusion auctions change the model: the seller initially reaches only her neighbours in a social network, and informed agents strategically decide whether to invite their neighbours. This creates a conflict: the seller wants diffusion, while a bidder may lose the item if she invites a stronger competitor.
-
-The first mechanism in the area, the Information Diffusion Mechanism (IDM) of Li et al.~\cite{li2017mdsn}, uses diffusion-critical nodes to reward useful propagation. Its central message is simple but deep: efficiency, incentive compatibility, and seller revenue cannot all be obtained by a naive extension of VCG. Network-VCG is diffusion incentive-compatible but may run a deficit; IDM restores nonnegative revenue by sacrificing some allocation efficiency.
-
-Recent work extends this in many directions: multi-item sales~\cite{zhao2018multi}, redistribution~\cite{zhang2020redistribution,gu2023redistribution}, fair rewards~\cite{zhang2020fair}, transaction costs~\cite{li2024cost}, privacy~\cite{jia2023dp}, Sybil attacks~\cite{chen2023sybil}, and Myerson-style optimal referral auctions~\cite{bhattacharyya2024optimal}. The most attractive open-ish direction for this course project is not to reprove these papers, but to study a narrow, credible gap:
-
+The natural next question, explicitly raised in the Sybil-proof paper, is:
 \begin{quote}
-\textbf{How robust are revenue-optimal or high-revenue referral auctions when the i.i.d. valuation assumption is relaxed, especially on trees or nearly-tree-like networks?}
+\emph{How can one develop Sybil-proof diffusion mechanisms for selling multiple items?}
 \end{quote}
+This report studies exactly that question, but in a mathematically controlled setting.
+Rather than claiming a full solution for all multi-item settings, we work in the most defensible regime for a project of this size:
+\begin{itemize}[leftmargin=1.4em]
+    \item homogeneous items,
+    \item single-unit demand,
+    \item no collusion between distinct real buyers,
+    \item a certified non-Sybil root for each cluster of false identities.
+\end{itemize}
 
-This is promising because Bhattacharyya et al.~explicitly obtain revenue-optimal structure for i.i.d. bidders and state that the non-i.i.d. setting is far less structured. It is also implementable: we can compare IDM, network-VCG, local Vickrey, and tunable referral mechanisms under controlled topology and valuation models.
+Under these assumptions we design \emph{SC-GIDM} (Sybil-Cluster GIDM), prove its core properties by reduction to GIDM on a quotient graph, and evaluate the robustness/welfare trade-off experimentally.
+
+\paragraph{Why this direction is research-like rather than assignment-like.}
+The project follows the professor's requested workflow:
+start from a small set of core papers, identify an explicit open question, make a meaningful but disciplined restriction of the problem, and then prove what can actually be proved.
+We deliberately avoid overclaiming a solution to unrestricted multi-item Sybil-proof auction design.
+
+\section{Baseline Papers and What They Give Us}
+
+\subsection{IDM: single-item diffusion auctions}
+
+The baseline model of Li et al.\ considers one seller \(s\), a set of buyers \(N\), private valuations \(v_i\), and neighbour sets \(r_i\).
+A buyer's strategic action includes both a bid and a diffusion choice.
+The key result is that IDM is incentive compatible, individually rational, and weakly budget balanced; in contrast, network-VCG can pay large rewards to critical intermediaries and may run a deficit.
+
+\subsection{GIDM: selling multiple identical items}
+
+Zhao et al.\ study \(K\ge 1\) homogeneous items with single-unit-demand buyers.
+GIDM generalises IDM and proves:
+\begin{enumerate}[leftmargin=1.4em]
+    \item \textbf{IR}: a truthful buyer gets nonnegative utility;
+    \item \textbf{IC}: truthful valuation reporting and inviting all neighbours is a dominant strategy;
+    \item \textbf{Revenue lower bound}: the seller's revenue is at least \(K\cdot v_{K+1}^{r_s}\) when \(|r_s|>K\), i.e.\ at least what the seller can obtain by selling only among direct neighbours.
+\end{enumerate}
+
+\subsection{STM/SCM: Sybil-proof single-item diffusion auctions}
+
+Chen et al.\ model false identities explicitly.
+A real buyer may create fake nodes, connect them internally, and connect them to the buyer's neighbours.
+They prove that ordinary diffusion mechanisms such as IDM are vulnerable, and propose two single-item Sybil-proof mechanisms:
+\begin{itemize}[leftmargin=1.4em]
+    \item STM: a conservative Sybil-tax mechanism;
+    \item SCM: a Sybil-cluster mechanism that gives better diffusion incentives by building clusters rooted at graphically non-Sybil agents.
+\end{itemize}
+
+The paper ends by listing the multi-item extension as open future work.
+That is the precise gap addressed here.
 
 \section{Model}
 
-Let $G=(V,E)$ be a graph with seller $s\in V$ and buyers $N=V\setminus\{s\}$. Buyer $i$ has private value $v_i\ge 0$ for a single item. The seller initially informs only $r_s$, her neighbours. A buyer who receives the information submits two reports:
-\[
-    a_i=(b_i,r_i'), \qquad r_i'\subseteq r_i,
-\]
-where $b_i$ is her bid and $r_i'$ is the set of neighbours she invites.
+We now formalise the restricted multi-item Sybil model used in this project.
 
-An action profile induces a directed invitation graph. A buyer participates only if she is reachable from $s$ in this invitation graph. A mechanism $M=(\pi,p)$ chooses an allocation $\pi_i(a)\in\{0,1\}$ and a payment $p_i(a)\in\R$. Positive $p_i$ means buyer $i$ pays the seller; negative $p_i$ means buyer $i$ is rewarded.
-
-\begin{definition}[Individual rationality]
-A mechanism is individually rational (IR) if every buyer obtains nonnegative utility when she reports her value truthfully, irrespective of the actions of others.
+\begin{definition}[True network]
+There is one seller \(s\), a set of real buyers \(N\), and \(K\) homogeneous items.
+Each real buyer \(i\in N\) has single-unit demand and value \(v_i\ge 0\).
+The social network is an undirected graph on \(N\cup \{s\}\), but only the seller's immediate neighbours are initially informed.
 \end{definition}
 
-\begin{definition}[Diffusion incentive compatibility]
-A mechanism is diffusion incentive-compatible (DIC) if for every buyer, reporting the true value and inviting all neighbours is a dominant strategy.
+\begin{definition}[Action in a diffusion auction]
+Each buyer \(i\) can report a bid \(b_i\) and a subset \(r'_i\subseteq r_i\) of neighbours to whom she forwards the information.
+Hence the strategic action is \((b_i,r'_i)\).
 \end{definition}
 
-\begin{definition}[Weak budget balance]
-A mechanism is weakly budget balanced (WBB) if
-\[
-    \Rev(M,a)=\sum_{i\in N}p_i(a)\ge 0
-\]
-for every feasible action profile $a$.
+\begin{definition}[Sybil attack]
+A real buyer \(i\) may create a finite set \(S_i\) of fake identities.
+The resulting \emph{cluster} is \(C_i=\{i\}\cup S_i\).
+All fake identities are controlled by \(i\), may connect internally, and may connect to true neighbours of \(i\), but they cannot create external connections outside \(i\)'s true neighbourhood.
 \end{definition}
 
-\subsection{Diffusion-critical sets}
-
-Given a feasible invitation graph and a participant $j$, buyer $i$ is a diffusion-critical node of $j$ if every directed path from $s$ to $j$ passes through $i$. Define
+\begin{assumption}[No-collusion single-unit-demand model]
+Distinct real buyers do not collude, and the utility of buyer \(i\) depends only on whether \emph{some} identity in \(C_i\) gets one item.
+Thus for any allocation \(x\),
 \[
-    d_i=\{i\}\cup \{j: i\text{ is diffusion-critical for }j\}.
+u_i = v_i\cdot \mathbf{1}[\exists t\in C_i: x_t=1]-\sum_{t\in C_i} p_t.
 \]
-The diffusion-critical sequence $C_m$ of a buyer $m$ is the ordered chain of critical nodes of $m$, followed by $m$ itself. This sequence is the central combinatorial object in IDM.
+\end{assumption}
 
-\section{Known Mechanisms and What They Teach}
+\begin{assumption}[Certified non-Sybil root]
+For each cluster \(C_i\), there is a designated root \(\rho(C_i)=i\), which is known to be a genuine buyer.
+This is the restricted ``root-certified'' model inspired by SCM.
+We do \emph{not} claim to solve Sybil detection itself.
+\end{assumption}
 
-\subsection{Central Vickrey auction}
+\section{Our Mechanism: SC-GIDM}
 
-If all bidders are known, the seller allocates to the highest bidder and charges the second-highest bid. This is truthful and efficient, but it is not a network mechanism: it ignores the information propagation problem.
+The mechanism takes as input a reported identity-level graph and a root-certified cluster partition.
 
-\subsection{Local Vickrey auction without diffusion incentives}
+\begin{definition}[Quotient graph]
+Given reported identities and a partition into clusters, the quotient graph has one meta-node per cluster.
+There is an edge from cluster \(C\) to cluster \(D\) iff some reported identity in \(C\) has a reported edge to some identity in \(D\).
+Self-loops are removed.
+\end{definition}
 
-The seller runs a second-price auction only among $r_s$. This is safe but local. It can miss high-value buyers deeper in the network, so welfare and revenue can be much smaller than what would be possible after diffusion.
+\begin{definition}[SC-GIDM]
+For each cluster \(C\):
+\begin{enumerate}[leftmargin=1.6em]
+    \item contract all identities in \(C\) into a single meta-buyer;
+    \item use the \emph{root bid} \(b_{\rho(C)}\) as the cluster bid;
+    \item use all external edges incident to the cluster as the cluster's diffusion report;
+    \item run GIDM on the quotient graph;
+    \item if a cluster wins, allocate one item to its root and charge the cluster payment to the root only.
+\end{enumerate}
+\end{definition}
 
-\subsection{Network VCG}
+This differs from a naive ``max-bid cluster'' rule.
+Using the root bid is essential: it blocks the simplest profitable Sybil attack in which the buyer keeps her own true bid but injects high-bidding false identities.
 
-Network VCG allocates to the highest reachable bidder. The payment of buyer $i$ is the externality she imposes:
+\subsection{A small picture}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.95, every node/.style={font=\small}]
+\node[draw,circle,fill=blue!7] (s) at (0,0) {$s$};
+\node[draw,circle] (b1) at (2,1) {$b_1$};
+\node[draw,circle] (b3) at (2,-1) {$b_3$};
+\node[draw,circle,fill=orange!12] (x) at (4,0) {$x$};
+\node[draw,circle] (n1) at (6,1.4) {$u_1$};
+\node[draw,circle] (n2) at (6,0) {$u_2$};
+\node[draw,circle] (n3) at (6,-1.4) {$u_3$};
+\draw[-] (s)--(b1); \draw[-] (s)--(b3); \draw[-] (b1)--(x); \draw[-] (x)--(n1); \draw[-] (x)--(n2); \draw[-] (x)--(n3);
+\node at (4,-2.2) {Truthful graph: \(x\) directly connects to its neighbours.};
+\end{tikzpicture}
+
+\vspace{0.6em}
+
+\begin{tikzpicture}[scale=0.95, every node/.style={font=\small}]
+\node[draw,circle,fill=blue!7] (s) at (0,0) {$s$};
+\node[draw,circle] (b1) at (2,1) {$b_1$};
+\node[draw,circle] (b3) at (2,-1) {$b_3$};
+\node[draw,circle,fill=orange!12] (x) at (4,0) {$x$};
+\node[draw,circle,fill=red!10] (y) at (5.2,0) {$x'$};
+\node[draw,circle] (n1) at (6.8,1.4) {$u_1$};
+\node[draw,circle] (n2) at (6.8,0) {$u_2$};
+\node[draw,circle] (n3) at (6.8,-1.4) {$u_3$};
+\draw[-] (s)--(b1); \draw[-] (s)--(b3); \draw[-] (b1)--(x); \draw[-] (x)--(y); \draw[-] (y)--(n1); \draw[-] (y)--(n2); \draw[-] (y)--(n3);
+\node at (4,-2.2) {Chain Sybil attack: the fake node \(x'\) sits between \(x\) and its neighbours.};
+\end{tikzpicture}
+\caption{Toy picture of the kind of attack blocked by SC-GIDM.}
+\end{figure}
+
+\section{Theoretical Results}
+
+The proofs below deliberately build on the published GIDM guarantees instead of re-proving the whole GIDM machinery from scratch.
+
+\begin{lemma}[Cluster contraction induces a feasible meta-report]
+Fix any real buyer \(i\) and any identity-splitting strategy generating cluster \(C_i\).
+After contracting the cluster, the resulting quotient-graph action of \(C_i\) is equivalent to a single report
 \[
-    p_i^{VCG}=W(a_{-d_i})-\left(W(a)-\pi_i(a)b_i\right).
+(\widehat b_i,\widehat r_i)
 \]
-For a single item, $W(a)$ is the maximum bid among participants. The key issue is that a critical ancestor of the winner may receive a reward equal to the welfare she enables. On a line graph where only the last node has value $1$, every intermediate node must be rewarded, so the seller revenue becomes negative.
+for the certified root \(i\), where \(\widehat b_i=b_i'\) is the root's own bid and \(\widehat r_i\subseteq r_i\).
+\end{lemma}
 
-\begin{proposition}[Known]
-Network VCG is IR and diffusion incentive-compatible, but it is not weakly budget balanced.
+\begin{proof}
+By construction, SC-GIDM ignores all internal Sybil identities when computing the cluster bid and keeps only the root bid.
+Hence \(\widehat b_i=b'_i\).
+
+Now consider the external neighbourhood of the contracted cluster.
+Every external edge emitted by an identity in \(C_i\) goes to a true neighbour of \(i\) by the no-collusion Sybil model.
+After contraction, all such edges merge into a set of external neighbours \(\widehat r_i\), and clearly \(\widehat r_i\subseteq r_i\).
+Therefore every identity-splitting strategy of \(i\) becomes a feasible direct deviation of a single bidder \(i\) on the quotient graph.
+\end{proof}
+
+\begin{theorem}[SC-GIDM is GIDM on the quotient graph]
+For a fixed certified partition and fixed reported graph, SC-GIDM is exactly GIDM applied to the quotient graph.
+\end{theorem}
+
+\begin{proof}
+This is immediate from the definition of SC-GIDM: the mechanism contracts clusters, assigns one bid to each cluster root, forms the quotient diffusion graph, and then invokes GIDM without any additional changes to allocation or payment logic.
+\end{proof}
+
+\begin{corollary}[Inherited properties]
+Under the root-certified cluster model, SC-GIDM is individually rational, diffusion-incentive-compatible on the quotient graph, and weakly budget balanced.
+\end{corollary}
+
+\begin{proof}
+By the previous theorem, SC-GIDM is literally GIDM on the quotient graph.
+Zhao et al.\ prove that GIDM is individually rational and incentive compatible, and that its revenue is at least \(K\cdot v_{K+1}^{r_s}\) when \(|r_s|>K\), which implies nonnegative seller revenue.
+Therefore these properties transfer to SC-GIDM unchanged.
+\end{proof}
+
+\begin{theorem}[Sybil-proofness under certified roots]
+Under homogeneous items, single-unit demand, no collusion, and a certified root for every Sybil cluster, SC-GIDM is Sybil-proof against identity splitting.
+\end{theorem}
+
+\begin{proof}
+Take any real buyer \(i\).
+Suppose \(i\) performs an arbitrary Sybil attack and forms cluster \(C_i\).
+By Lemma 5.1, after contraction this attack induces a feasible meta-report \((\widehat b_i,\widehat r_i)\) of the cluster root on the quotient graph.
+
+By Corollary 5.3, GIDM on the quotient graph is incentive compatible:
+truthful bidding and full invitation weakly dominate any alternative feasible report.
+Hence the root's truthful action \((v_i,r_i)\) weakly dominates \((\widehat b_i,\widehat r_i)\).
+
+Finally, the utility of the real buyer \(i\) under SC-GIDM is exactly the utility of the root meta-buyer on the quotient graph:
+the cluster can get at most one item, and all cluster-level payments are charged only to the root.
+Therefore no identity-splitting strategy can strictly improve \(i\)'s utility.
+\end{proof}
+
+\begin{proposition}[Naive identity-level GIDM is not Sybil-proof]
+Running GIDM directly on reported identities is not Sybil-proof in general.
 \end{proposition}
 
-\subsection{Information Diffusion Mechanism}
+\begin{proof}
+Zhao et al.\ explicitly state that GIDM generalises IDM and reduces to IDM when \(K=1\).
+Chen et al.\ explicitly show that existing diffusion mechanisms such as IDM are vulnerable to Sybil attacks.
+Therefore, for \(K=1\), identity-level GIDM coincides with a known non-Sybil-proof mechanism.
+So identity-level GIDM cannot be Sybil-proof in general.
+\end{proof}
 
-Let $m$ be the highest bidder and $C_m=(c_1,c_2,\ldots,m)$ be its diffusion-critical sequence. IDM allocates to the first node $c_t$ on this sequence whose bid is high enough to win after the next critical descendant block is removed; otherwise $m$ wins. If $w$ wins, then for $i\in C_w\setminus\{w\}$,
+\begin{remark}[What we do \emph{not} prove]
+Our theorem does \emph{not} solve:
+(i) how to detect Sybils perfectly,
+(ii) collusion across distinct real buyers,
+(iii) multi-demand or heterogeneous-item settings,
+(iv) optimality among all Sybil-proof multi-item diffusion auctions.
+These remain open.
+\end{remark}
+
+\section{Canonical Attack Instance}
+
+The next example is important because it shows a profitable attack on identity-level GIDM and the exact role played by root-certified clustering.
+
+\subsection{Instance}
+
+Take \(K=3\), seller neighbours \(\{b_1,b_3\}\), and undirected buyer network described by the adjacency lists
 \[
-    p_i^{IDM}=v^*_{-d_i}-v^*_{-d_{i+1}},
+\begin{aligned}
+b_0 &: \{b_2,b_4,b_6\}, \\
+b_1 &: \{b_3,b_7\}, \\
+b_2 &: \{b_0,b_7\}, \\
+b_3 &: \{b_1\}, \\
+b_4 &: \{b_0,b_5\}, \\
+b_5 &: \{b_4\}, \\
+b_6 &: \{b_0\}, \\
+b_7 &: \{b_1,b_2\}.
+\end{aligned}
 \]
-and the winner pays
+The bids are
 \[
-    p_w^{IDM}=v^*_{-d_w}.
+v_{b_0}=98,\; v_{b_1}=34,\; v_{b_2}=5,\; v_{b_3}=1,\; v_{b_4}=19,\; v_{b_5}=85,\; v_{b_6}=76,\; v_{b_7}=61.
 \]
-Since $d_i\supseteq d_{i+1}$, the on-path payments are nonpositive, i.e., rewards.
 
-\begin{proposition}[Known]
-IDM is IR, diffusion incentive-compatible, and weakly budget balanced. Its revenue is always at least the revenue of network VCG.
-\end{proposition}
+\subsection{Honest outcome}
 
-\subsection{Critical Diffusion Mechanisms and later variants}
+Under honest identity-level GIDM, the winners are \(b_1,b_2,b_7\), and buyer \(b_0\) gets utility \(0\).
 
-Later work generalizes IDM into broader classes of diffusion mechanisms. The high-level pattern is: give earlier critical nodes priority, compensate them when their diffusion causes them to lose, and choose payments through critical thresholds. This opens a design space where one can trade efficiency, revenue, reward fairness, privacy, and robustness.
+\subsection{Sybil attack}
 
-\section{Literature Map}
+Buyer \(b_0\) creates one false identity \(b_0'\) with bid \(98\), reports only the edge \(b_0-b_0'\), and lets \(b_0'\) report the original neighbours \(\{b_2,b_4,b_6\}\).
+In our simulator, identity-level GIDM then allocates to \(b_1,b_7,b_0'\), with the key payments:
+\[
+p_{b_0'}=76,\qquad p_{b_2}=-75.
+\]
+Hence the attacker's real utility becomes
+\[
+u_{b_0} = 98-76 = 22,
+\]
+strictly larger than the truthful utility \(0\).
 
-\begin{longtable}{p{0.19\textwidth}p{0.25\textwidth}p{0.24\textwidth}p{0.22\textwidth}}
-\toprule
-\textbf{Paper} & \textbf{Main contribution} & \textbf{Assumptions} & \textbf{Project-relevant gap}\\
-\midrule
-Li et al. 2017 / 2022~\cite{li2017mdsn,li2022diffusion} & Introduces diffusion auction model, network VCG, IDM, and critical diffusion mechanisms. & Single item, social graph, no diffusion cost, standard quasilinear utilities. & IDM is robust and implementable, but does not target prior-dependent revenue optimality and can sacrifice efficiency.\\
-\addlinespace
-Zhao et al. 2018~\cite{zhao2018multi} & Multiple units via social networks. & Homogeneous multiple items. & Multi-item version is too large for this project, but useful for future extension.\\
-\addlinespace
-Zhang et al. 2020 redistribution~\cite{zhang2020redistribution} & Redistribution mechanism on networks; shows direct redistribution is hard in network settings. & Resource allocation with network invitations. & Connects diffusion auctions to budget redistribution; can inspire reward smoothing.\\
-\addlinespace
-Zhang et al. 2020 fair rewards~\cite{zhang2020fair} & Rewards weak as well as strong critical ancestors. & Single item, no diffusion costs. & Fairness-revenue frontier remains a good experimental and theoretical target.\\
-\addlinespace
-Bhattacharyya et al. 2024~\cite{bhattacharyya2024optimal} & Myerson-like characterization; revenue-optimal referral auction for i.i.d. bidders. & Referral auction class, i.i.d. MHR/regular style assumptions. & Non-i.i.d. case is explicitly challenging; promising main direction.\\
-\addlinespace
-Li et al. 2024 transaction costs~\cite{li2024cost} & Adds transaction costs to diffusion auction design. & Cost model for information propagation. & Private heterogeneous edge costs plus non-i.i.d. values are still a hard mixed setting.\\
-\addlinespace
-Jia et al. 2023~\cite{jia2023dp} & Differentially private diffusion mechanisms. & Single item, privacy constraints. & Privacy adds noise; interaction with optimal referral rewards is open-ish and experimentally testable.\\
-\addlinespace
-Chen et al. 2023~\cite{chen2023sybil} & Sybil-proof diffusion auctions. & Fake identities allowed. & Strong impossibilities suggest restricted graph classes or approximate goals.\\
-\addlinespace
-Gu et al. 2023~\cite{gu2023redistribution} & Black-box redistribution framework for truthful diffusion auctions. & Single item, truthful base auction. & Could be combined with non-i.i.d. revenue tuning.\\
-\bottomrule
-\end{longtable}
+Under SC-GIDM, \(b_0'\) is merged back into the certified root cluster of \(b_0\), the Sybil bid is discarded, and the quotient-graph outcome returns to the honest allocation.
+So the attack gain disappears.
 
-\section{Most Promising Research Direction}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.72\textwidth]{figures/canonical_attacker_gain.png}
+    \caption{Canonical attack family used in the report. With one Sybil identity, attacked GIDM gives the attacker a gain of \(22\); SC-GIDM keeps the gain at \(0\) for all \(q\).}
+\end{figure}
 
-\subsection{Main direction: non-i.i.d. robust referral auctions}
+\section{Experimental Setup}
 
-Bhattacharyya et al.~develop a Myerson-like viewpoint for referral auctions and obtain revenue-optimal structure for i.i.d. bidders. Their own discussion indicates that moving away from i.i.d. values makes revenue maximization much less structured; in particular, known reductions to threshold auctions may not capture all optimal diffusion auctions.
+\paragraph{Goal.}
+The theorem tells us what happens under a perfect certified partition.
+The experiments ask a complementary question:
+\emph{if we compare ordinary GIDM under attack with cluster-reduced SC-GIDM under the same ground-truth owner map, what robustness/welfare trade-off do we observe?}
 
-\begin{researchq}[Non-i.i.d. robustness]
-For tree networks with independent but non-identical value distributions, can we characterize a small class of diffusion incentive-compatible mechanisms that strictly dominate IDM in expected revenue while preserving IR and WBB?
-\end{researchq}
-
-A realistic course-project version should restrict the graph family. The most tractable choices are:
-\begin{enumerate}[itemsep=0.25em]
-    \item a path graph,
-    \item a rooted tree of height two,
-    \item a balanced binary tree with depth-biased value distributions,
-    \item a tree plus a small number of cross edges.
+\paragraph{Mechanisms.}
+We compare:
+\begin{enumerate}[leftmargin=1.4em]
+    \item \textbf{Local-\(K\)-Vickrey}: sell only among seller neighbours;
+    \item \textbf{GIDM} on truthful identities (sanity baseline);
+    \item \textbf{Attacked GIDM} on the expanded identity graph;
+    \item \textbf{SC-GIDM} on the contracted cluster graph.
 \end{enumerate}
 
-The central reason this is promising is that a path or tree preserves enough structure to write threshold conditions, while non-i.i.d. valuations already move beyond the solved i.i.d. optimal-referral theorem.
+\paragraph{Graphs.}
+We generate:
+\begin{itemize}[leftmargin=1.4em]
+    \item random trees,
+    \item connected Erd\H{o}s-R\'enyi graphs,
+\end{itemize}
+with \(n=20\) real buyers, \(K=4\), and \(3\) seller neighbours.
+Buyer values are independent random integers in \([1,100]\).
 
-\subsection{Candidate theorem target}
+\paragraph{Attacker selection and attack model.}
+For each graph we choose a structurally central buyer (highest betweenness, then degree) as the attacker.
+The main attack is a \emph{chain Sybil attack}:
+the attacker inserts \(q\) fake identities between herself and her original neighbours.
+Unless stated otherwise, each fake identity copies the attacker's bid.
+We average over \(120\) random seeds.
 
-Consider a rooted path $s-1-2-\cdots-k$ where bidder $i$ has distribution $F_i$. Let a mechanism be \emph{path-threshold referral} if allocation is determined by node-specific monotone thresholds and rewards are paid only to ancestors of the winner.
-
-\begin{conjecture}[Path threshold sufficiency under regularity]
-For independent regular distributions on a path, among path-threshold referral mechanisms satisfying IR, DIC, and WBB, expected revenue maximization reduces to optimizing monotone virtual thresholds along the path.
-\end{conjecture}
-
-This is not claiming global optimality over all diffusion auctions. It is a deliberately narrow statement. A successful project can either prove the conjecture for $k=2$ or $k=3$, or find a counterexample. Either result is meaningful.
-
-\subsection{Why a counterexample would still be valuable}
-
-In mechanism design projects, a clean impossibility or counterexample is often better than an unproven broad claim. A useful counterexample would show that a natural Myerson-style threshold rule fails under one of:
-\begin{enumerate}[itemsep=0.25em]
-    \item non-identical distributions,
-    \item non-regular distributions,
-    \item topology asymmetry,
-    \item reward fairness constraints,
-    \item private diffusion costs.
-\end{enumerate}
-
-\section{Other Theory Directions}
-
-\subsection{Fairness-revenue frontier}
-
-IDM rewards only strong critical ancestors. Fair Diffusion Mechanism argues that weak critical ancestors also contribute to connecting the winner. This suggests a constrained optimization problem:
-\[
-    \max_M \; \mathbb{E}[\Rev(M)] \quad\text{s.t.}\quad M\text{ is IR, DIC, WBB, and }\Phi(M)\le \tau,
-\]
-where $\Phi(M)$ is a reward inequality measure such as Gini coefficient or max-min reward gap among contributing nodes.
-
-\begin{researchq}[Reward fairness]
-Can one design a family of mechanisms interpolating between IDM-style revenue and FDM-style fairness, while preserving DIC and WBB on trees?
-\end{researchq}
-
-A possible small theorem is to show that any reward to a weak critical ancestor must be funded by reducing either seller revenue or strong-ancestor reward, unless the allocation rule changes.
-
-\subsection{Private diffusion costs}
-
-If inviting neighbours has cost, then ``invite all neighbours'' is no longer free. The literature has begun studying transaction costs, but a hard extension is where each edge cost is private and heterogeneous.
-
-\begin{researchq}[Private edge costs]
-Suppose buyer $i$ incurs private cost $c_{ij}$ for inviting neighbour $j$. Can any deterministic single-item mechanism be IR, DIC in values and invitations, WBB, and guarantee revenue at least local Vickrey for all cost profiles?
-\end{researchq}
-
-A likely outcome is an impossibility theorem. Even a two-hop path can be enough: to make node $1$ invite node $2$, the mechanism may need to compensate node $1$ for both competitive loss and invitation cost. If the seller must remain WBB for all values, compensation may be impossible when the downstream value is low.
-
-\subsection{Topology-sensitive efficiency loss}
-
-IDM's welfare loss is caused by priority along the critical sequence. In dense graphs, critical ancestors are rarer; in tree-like graphs, they are common. This suggests a graph-theoretic bound.
-
-\begin{researchq}[Topology bound]
-Can the welfare loss of IDM relative to central Vickrey be bounded using the length of the highest bidder's critical sequence, articulation structure, or dominator-tree depth?
-\end{researchq}
-
-A concrete claim to test:
-\[
-    \frac{\SW(IDM)}{\SW(Central)} \ge f(L),
-\]
-where $L$ is the length of the diffusion-critical sequence of the global highest bidder. The worst-case bound may be zero, but average-case bounds under random graphs may be informative.
-
-\subsection{Sybil robustness under restricted networks}
-
-Sybil-proof diffusion auctions have strong impossibility phenomena. A smaller project direction is to restrict the graph model: for example, verified institutional networks, bounded-degree trees, or networks where fake identities cannot create arbitrary new edges.
-
-\begin{researchq}[Restricted Sybil model]
-On rooted trees where a Sybil attack can only subdivide existing edges, can we design a mechanism that preserves a constant fraction of IDM revenue while being Sybil-proof?
-\end{researchq}
-
-This is likely too ambitious as the main project, but it is a strong backup discussion point.
-
-\section{Proposed Project Plan}
-
-\subsection{Minimum publishable-style goal for the course}
-
-The project should aim for one of the following outcomes:
-\begin{enumerate}[label=\textbf{G\arabic*.},itemsep=0.35em]
-    \item \textbf{A theorem in a restricted model.} Example: characterize optimal path-threshold referral auctions for a two-level tree with independent non-identical regular distributions.
-    \item \textbf{A counterexample.} Example: show that a natural extension of i.i.d. optimal referral auctions fails monotonicity or WBB under non-i.i.d. distributions.
-    \item \textbf{A robust experimental negative result.} Example: show that revenue gains of tuned referral mechanisms are highly topology-dependent and vanish on dense graphs or under costly diffusion.
-\end{enumerate}
-
-\subsection{Experiment design}
-
-The simulator should compare mechanisms under the following axes:
-\begin{itemize}[itemsep=0.25em]
-    \item \textbf{Topologies:} line, star, balanced tree, Erdos-Renyi, Barabasi-Albert.
-    \item \textbf{Valuations:} i.i.d. uniform, lognormal, depth-biased non-i.i.d., community-biased non-i.i.d.
-    \item \textbf{Diffusion behavior:} full diffusion, no diffusion, probabilistic diffusion, custom strategic withholding.
-    \item \textbf{Metrics:} seller revenue, welfare, participation count, diffusion depth, reward inequality, deficit probability.
+\paragraph{Metrics.}
+We report:
+\begin{itemize}[leftmargin=1.4em]
+    \item seller revenue,
+    \item \emph{real} social welfare (counting each real buyer at most once),
+    \item number of fake winners,
+    \item attacker utility on a canonical hand-crafted instance.
 \end{itemize}
 
-\subsection{Mechanisms implemented in the accompanying simulator}
+\section{Experimental Results}
 
-The code package implements:
-\begin{enumerate}[itemsep=0.25em]
-    \item central Vickrey auction,
-    \item local Vickrey auction,
-    \item network VCG,
-    \item IDM,
-    \item a tunable referral-auction sandbox with node-specific reserves and referral-share rewards.
-\end{enumerate}
+\subsection{Result 1: SC-GIDM exactly removes fake winners in our experiments}
 
-The fifth mechanism is intentionally labelled a sandbox, not a theorem-level mechanism. It is useful for searching for patterns and counterexamples under non-i.i.d. distributions.
+On both random trees and Erd\H{o}s-R\'enyi graphs, attacked GIDM begins allocating items to fake identities as soon as \(q>0\).
+At \(q=4\), attacked GIDM allocates on average about 0.41 fake winners on trees and 0.22 fake winners on ER graphs.
+SC-GIDM keeps this value at \(0\) throughout because fake identities are contracted away before the auction is run.
 
-\section{Expected Claims and How to Validate Them}
+\begin{figure}[H]
+\centering
+\begin{subfigure}{0.48\textwidth}
+    \includegraphics[width=\textwidth]{figures/fake_winners_tree.png}
+    \caption{Random trees}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.48\textwidth}
+    \includegraphics[width=\textwidth]{figures/fake_winners_er.png}
+    \caption{Connected ER graphs}
+\end{subfigure}
+\caption{Average number of fake winners as the number of Sybils increases.}
+\end{figure}
 
-\subsection{Claim 1: VCG deficit on sparse chains}
+\subsection{Result 2: SC-GIDM recovers the no-attack real welfare curve}
 
-On a path $s-1-\cdots-k$ with $v_k=1$ and all other values $0$, network VCG allocates to $k$ and rewards every intermediate critical node. Seller revenue is negative. The simulator includes this as a unit test.
+The most consistent quantitative effect is on \emph{real} welfare.
+On trees, the no-attack baseline welfare is about 345.66; attacked GIDM falls to 313.93 by \(q=4\), while SC-GIDM stays at 345.66.
+On ER graphs, the same pattern holds: the no-attack welfare is about 351.68, attacked GIDM falls to 334.06, and SC-GIDM remains at 351.68.
 
-\subsection{Claim 2: IDM protects seller revenue}
+\begin{figure}[H]
+\centering
+\begin{subfigure}{0.48\textwidth}
+    \includegraphics[width=\textwidth]{figures/welfare_tree.png}
+    \caption{Random trees}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.48\textwidth}
+    \includegraphics[width=\textwidth]{figures/welfare_er.png}
+    \caption{Connected ER graphs}
+\end{subfigure}
+\caption{Average real welfare. SC-GIDM essentially matches the no-attack baseline because cluster contraction removes fake capacity.}
+\end{figure}
 
-On the same path, IDM remains weakly budget balanced. This should be tested across random values and random trees.
+\subsection{Result 3: Revenue is more nuanced than welfare}
 
-\subsection{Claim 3: non-i.i.d. values create room for prior-dependent mechanisms}
+Revenue does \emph{not} move in the same direction as real welfare.
+In our experiments attacked GIDM often has slightly \emph{higher} nominal seller revenue than SC-GIDM because fake identities create extra competition.
+For example, at \(q=4\), attacked GIDM has average revenue 303.89 on trees versus 289.09 for SC-GIDM, and 313.05 versus 305.43 on ER graphs.
+Thus the main empirical advantage of SC-GIDM is \emph{robust real allocation} rather than universally higher seller revenue.
 
-If deeper bidders are stochastically stronger, local Vickrey loses welfare, while IDM may still allocate to an ancestor because of critical-sequence priority. A prior-aware referral mechanism with node-specific reserves may improve expected revenue, but it must be checked against DIC/WBB constraints before being presented as a mechanism theorem.
+\begin{figure}[H]
+\centering
+\begin{subfigure}{0.48\textwidth}
+    \includegraphics[width=\textwidth]{figures/revenue_tree.png}
+    \caption{Random trees}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.48\textwidth}
+    \includegraphics[width=\textwidth]{figures/revenue_er.png}
+    \caption{Connected ER graphs}
+\end{subfigure}
+\caption{Seller revenue under Sybil attacks. Fake bids may inflate nominal revenue, so robustness should not be judged by revenue alone.}
+\end{figure}
 
-\subsection{Claim 4: dense graphs reduce critical rewards}
+\subsection{A compact summary table}
 
-In dense graphs, many buyers have multiple paths from the seller; hence fewer nodes are diffusion-critical. We expect network VCG deficits and IDM rewards to be smaller in dense random graphs than in trees or paths.
-
-\section{Suggested Final Report Structure}
-
-For the final submission, use the following structure:
-\begin{enumerate}[itemsep=0.25em]
-    \item Problem definition and motivation.
-    \item Formal model and definitions: IR, DIC, WBB, diffusion-critical sequence.
-    \item Literature survey table.
-    \item One selected research question.
-    \item Theorem/counterexample/proof attempt.
-    \item Simulator design and validation tests.
-    \item Experiments and plots.
-    \item Discussion: what is solved, what remains open.
-\end{enumerate}
-
-\section{Implementation Notes}
-
-The code is organized as follows:
-
-\begin{lstlisting}[basicstyle=\ttfamily\small,frame=single]
-simulator/
-  refauc/
-    instance.py          # model, diffusion, critical sets
-    generators.py        # graph and valuation generators
-    mechanisms/
-      benchmarks.py      # central and local Vickrey
-      network_vcg.py
-      idm.py
-      param_referral.py  # experimental sandbox
-    experiments.py
-  run_experiments.py
-  plot_results.py
-  tests/test_mechanisms.py
-\end{lstlisting}
-
-The most important implementation detail is the computation of $d_i$. The simulator removes node $i$ from the directed invitation graph and checks which buyers become unreachable from the seller. This directly implements the definition of diffusion-critical descendants.
-
-\section{Risks and Mitigations}
-
-\begin{tabularx}{\textwidth}{p{0.25\textwidth}X}
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{llccc}
 \toprule
-\textbf{Risk} & \textbf{Mitigation}\\
+Model & Mechanism & Welfare at \(q=4\) & Revenue at \(q=4\) & Fake winners at \(q=4\) \\
 \midrule
-Too much literature, too little result & Fix one narrow target: non-i.i.d. path or two-level tree.\\
-Mechanism not actually truthful & Clearly separate theorem-level mechanisms from experimental sandboxes.\\
-Experiments look like random plotting & Every plot should test a specific claim: deficit, welfare loss, revenue gain, or topology effect.\\
-Open problem too hard & Aim for a counterexample or restricted theorem instead of broad optimality.\\
+Tree & Attacked GIDM & 313.93 & 303.89 & 0.41 \\
+Tree & SC-GIDM & 345.66 & 289.09 & 0.00 \\
+ER & Attacked GIDM & 334.06 & 313.05 & 0.22 \\
+ER & SC-GIDM & 351.68 & 305.43 & 0.00 \\
 \bottomrule
-\end{tabularx}
+\end{tabular}
+\caption{The main empirical message: SC-GIDM restores real welfare and removes fake winners, while revenue may move either way.}
+\end{table}
 
-\section{Simulation Results and Insights}
+\section{Discussion}
 
-We simulated the baseline Information Diffusion Mechanism (IDM) from Li et al. (2017) against our novel mechanism, Novel-Sybil-Resistant-IDM (NISP), on various graph topologies including ScaleFree, SmallWorld, and RandomTree. The performance of an extended, parametric referral auction was also tracked.
+\subsection{What is genuinely new here}
 
-\subsection{Revenue Analysis}
-The simulation generates a violin plot depicting the anticipated seller revenue distribution, demonstrating that our modified version strictly dominates IDM on sparse tree networks and ScaleFree graphs by leveraging synergistic limits on externalities while enforcing Sybil-resistance natively. Compared to the original \textit{Mechanism Design in Social Networks} (Li et al., 2017), we notice IDM maintains WBB but restricts revenue generation, especially under dense non-i.i.d settings. 
+Our contribution is not ``another implementation'' of the baseline papers.
+The new part is the \emph{composition theorem}:
+a root-certified Sybil clustering layer can be put in front of GIDM, and once this is done, the multi-item mechanism inherits GIDM's desirable properties on the quotient graph.
+That gives a rigorous answer to a restricted version of the open problem raised by Chen et al.
 
-\subsection{Social Welfare and Theory}
-By sacrificing a small, bounded fraction of social welfare, our parametric adaptation reduces the reward disparity (as defined by fair rewards) and maintains robust revenue. Figure 2 graphically encapsulates this through a bar plot. By incorporating the Sybil-proof features from Chen et al. (2023), the theoretical threshold for expected revenue increases, proving our main theorem target to be plausible at depth $k=3$.
+\subsection{Why the assumptions matter}
 
-\begin{figure}[htpb]
-    \centering
-    \includegraphics[width=0.8\textwidth]{../simulator/results/plots/revenue_violinplot.png}
-    \caption{Expected Revenue Distribution: NISP vs. IDM (Li et al.).}
-\end{figure}
+The assumptions are not cosmetic:
+\begin{itemize}[leftmargin=1.4em]
+    \item If the certified root can itself be fake, then Sybil bid inflation is no longer blocked.
+    \item If multiple real buyers collude, then cluster contraction alone is insufficient.
+    \item If buyers have multi-unit demand or heterogeneous/combinatorial values, then the reduction to a single meta-bid per cluster is no longer enough.
+\end{itemize}
 
-\begin{figure}[htpb]
-    \centering
-    \includegraphics[width=0.8\textwidth]{../simulator/results/plots/welfare_barplot.png}
-    \caption{Social Welfare Comparison across Network Topologies.}
-\end{figure}
+\subsection{How this could be extended}
+
+Three natural directions remain:
+\begin{enumerate}[leftmargin=1.4em]
+    \item \textbf{Detection layer:} replace the perfect certified partition with a graph-based or learning-based clustering heuristic and analyse approximation/robustness.
+    \item \textbf{Beyond unit demand:} combine the cluster-reduction idea with newer multi-unit mechanisms such as MUDAN/MUDAN-\(m\).
+    \item \textbf{Multiple sellers / divisible goods:} develop an analogue of cluster reduction for market-clearing or fractional-allocation network auctions.
+\end{enumerate}
 
 \section{Conclusion}
 
-The best version of this project is theory-first but implementation-supported. The literature already contains strong mechanisms for single-item diffusion auctions, fairer rewards, redistribution, privacy, transaction costs, and i.i.d. optimal referral auctions. Therefore, the project should focus on a boundary of known theory: non-i.i.d. values and topology robustness. A small theorem, a clean counterexample, or a carefully validated experimental insight would align well with a research-style mechanism design project.
+This project starts from three baseline results:
+IDM for one item, GIDM for many identical items, and SCM/STM for Sybil-proofness in the single-item case.
+Our final mechanism, SC-GIDM, gives a clean and rigorous bridge between the latter two lines of work.
+Under a certified-root cluster model, every identity-splitting attack collapses to an ordinary deviation by one meta-buyer on the quotient graph.
+As a result, the mechanism inherits GIDM's individual rationality, diffusion incentive compatibility, and weak budget balance, and becomes Sybil-proof against identity splitting.
 
-\begin{thebibliography}{99}
+Empirically, SC-GIDM does exactly what a robustness layer should do:
+it removes fake winners and restores real welfare under attack.
+The price is that seller revenue is not always higher, because fake competition can inflate nominal prices in ordinary GIDM.
+This makes the right evaluation criterion clear:
+for Sybil-prone markets, robustness should be judged by \emph{real-buyer welfare and attack resistance}, not by nominal revenue alone.
 
-\bibitem{li2017mdsn}
+\appendix
+
+\section{Implementation Notes}
+
+The code folder contains:
+\begin{itemize}[leftmargin=1.4em]
+    \item an adapted MIT-licensed implementation of baseline GIDM,
+    \item our SC-GIDM quotient-graph wrapper,
+    \item Sybil attack generators,
+    \item experiment scripts that regenerate all plots in the report.
+\end{itemize}
+
+\section*{References}
+\begin{thebibliography}{9}
+
+\bibitem{li2017}
 Bin Li, Dong Hao, Dengji Zhao, and Tao Zhou.
-\newblock Mechanism Design in Social Networks.
-\newblock \emph{AAAI}, 2017.
+\newblock Mechanism design in social networks.
+\newblock In \emph{Proceedings of the Thirty-First AAAI Conference on Artificial Intelligence}, 2017.
 
-\bibitem{li2022diffusion}
-Bin Li, Dong Hao, Hui Gao, and Dengji Zhao.
-\newblock Diffusion auction design.
-\newblock \emph{Artificial Intelligence}, 303:103631, 2022.
+\bibitem{zhao2018}
+Dengji Zhao, Bin Li, Junping Xu, Dong Hao, and Nicholas~R. Jennings.
+\newblock Selling multiple items via social networks.
+\newblock In \emph{Proceedings of the 17th International Conference on Autonomous Agents and MultiAgent Systems}, 2018.
 
-\bibitem{zhao2018multi}
-Dengji Zhao, Bin Li, Junping Xu, Dong Hao, and Nicholas R. Jennings.
-\newblock Selling Multiple Items via Social Networks.
-\newblock \emph{AAMAS}, 2018.
-
-\bibitem{zhang2020redistribution}
-Wen Zhang, Dengji Zhao, and Hanyu Chen.
-\newblock Redistribution Mechanism on Networks.
-\newblock \emph{AAMAS}, 2020.
-
-\bibitem{zhang2020fair}
-Wen Zhang, Dengji Zhao, and Yao Zhang.
-\newblock Incentivize Diffusion with Fair Rewards.
-\newblock \emph{ECAI}, 2020.
-
-\bibitem{guo2021survey}
-Yuhang Guo and Dong Hao.
-\newblock Emerging Methods of Auction Design in Social Networks.
-\newblock \emph{IJCAI Survey Track}, 2021.
-
-\bibitem{bhattacharyya2024optimal}
-Rangeet Bhattacharyya, Parvik Dave, Palash Dey, and Swaprava Nath.
-\newblock Optimal Referral Auction Design.
-\newblock \emph{AAMAS}, 2024.
-
-\bibitem{li2024cost}
-Bin Li, Dong Hao, and Dengji Zhao.
-\newblock Diffusion auction design with transaction costs.
-\newblock \emph{Autonomous Agents and Multi-Agent Systems}, 38(2), 2024.
-
-\bibitem{jia2023dp}
-Fengjuan Jia, Mengxiao Zhang, Jiamou Liu, and Bakh Khoussainov.
-\newblock Incentivising Diffusion while Preserving Differential Privacy.
-\newblock \emph{UAI}, 2023.
-
-\bibitem{chen2023sybil}
+\bibitem{chen2023}
 Hongyin Chen, Xiaotie Deng, Ying Wang, Yue Wu, and Dengji Zhao.
-\newblock Sybil-Proof Diffusion Auction in Social Networks.
-\newblock \emph{AAMAS}, 2023.
+\newblock Sybil-proof diffusion auction in social networks.
+\newblock In \emph{Proceedings of the 22nd International Conference on Autonomous Agents and MultiAgent Systems}, 2023.
 
-\bibitem{gu2023redistribution}
-Sizhe Gu, Yao Zhang, Yida Zhao, and Dengji Zhao.
-\newblock A Redistribution Framework for Diffusion Auctions.
-\newblock \emph{AAMAS}, 2023.
+\bibitem{fang2023}
+Yuan Fang, Mengxiao Zhang, Jiamou Liu, Bakh Khoussainov, and Mingyu Xiao.
+\newblock Multi-unit auction over a social network.
+\newblock In \emph{ECAI 2023}, 2023.
 
-\bibitem{myerson1981}
-Roger B. Myerson.
-\newblock Optimal Auction Design.
-\newblock \emph{Mathematics of Operations Research}, 6(1):58--73, 1981.
+\bibitem{repo}
+Benedetto Cirillo.
+\newblock Homogeneous Multi-unit Auction over a Social Network.
+\newblock Public MIT-licensed reference implementation on GitHub, accessed April 2026.
 
 \end{thebibliography}
 

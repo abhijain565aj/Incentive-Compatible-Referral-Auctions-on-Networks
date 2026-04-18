@@ -1,100 +1,219 @@
-from __future__ import annotations
 
 import argparse
-import configparser
 import csv
 from pathlib import Path
-from typing import List
 
-from plot_results import main as plot_main
-from refauc.experiments import summarize, sweep
+import matplotlib.pyplot as plt
+import pandas as pd
 
-
-def _parse_csv_list(raw: str) -> List[str]:
-    return [x.strip() for x in raw.split(",") if x.strip()]
-
-
-def _parse_int_list(raw: str) -> List[int]:
-    return [int(x.strip()) for x in raw.split(",") if x.strip()]
+from code.src.attacks import apply_chain_attack, apply_star_attack
+from code.src.cluster_gidm import sc_gidm
+from code.src.gidm_adapted import gidm, local_k_vickrey, seller_revenue
+from code.src.sim_utils import generate_graph, pick_attacker
+from code.src.utils import truthful_owner, utility_single_unit, real_welfare, fake_winner_count
 
 
-def run_from_config(config_path: str = "config.ini") -> None:
-    cfg = configparser.ConfigParser()
-    loaded = cfg.read(config_path)
-    if not loaded:
-        raise FileNotFoundError(f"Could not read config file: {config_path}")
+def mechanism_metrics(alloc, pay, owner, true_values, attacker):
+    utility = utility_single_unit(alloc, pay, owner, true_values)
+    return {
+        "revenue": seller_revenue(pay),
+        "welfare": real_welfare(alloc, owner, true_values),
+        "attacker_utility": utility[attacker],
+        "fake_winners": fake_winner_count(alloc),
+    }
 
-    paths = cfg["paths"]
-    sim = cfg["simulation"]
-    topo = cfg["topology"]
 
-    raw_results = Path(paths.get("raw_results_csv", "results/sample_results.csv"))
-    summary_results = Path(paths.get("summary_results_csv", "results/summary_results.csv"))
-    per_run_dir = Path(paths.get("per_run_dir", "results/per_run"))
-    plot_dir = Path(paths.get("plot_dir", "results/plots"))
+def run_single(seed, model, q, k, n, seller_deg, attack_mode, syb_bid_mode):
+    seller_net, reports, bids, g = generate_graph(n=n, model=model, seed=seed, seller_deg=seller_deg)
+    attacker = pick_attacker(g)
 
-    seed_start = sim.getint("seed_start", 0)
-    seed_count = sim.getint("seed_count", 12)
-    seeds = range(seed_start, seed_start + seed_count)
-    sizes = _parse_int_list(sim.get("sizes", "20,40"))
-    valuation_modes = _parse_csv_list(sim.get("valuation_modes", "uniform,lognormal,depth_biased"))
-    diffusion_strategies = _parse_csv_list(sim.get("diffusion_strategies", "full,probabilistic"))
-    topologies = _parse_csv_list(sim.get("topologies", "line,star,tree,er,ba"))
-    mechanisms = _parse_csv_list(sim.get("mechanisms", "network_vcg,idm"))
-    invite_prob = sim.getfloat("invite_prob", 0.7)
+    alloc0, pay0 = gidm(k, seller_net, reports, bids)
+    owner0 = truthful_owner(seller_net, reports)
+    true_values = {i: bids[i] for i in owner0}
+    base = mechanism_metrics(alloc0, pay0, owner0, true_values, attacker)
 
-    tree_branching = topo.getint("tree_branching", 2)
-    ba_m = topo.getint("ba_m", 2)
-    er_p_max = topo.getfloat("er_p_max", 0.25)
-    er_p_scale = topo.getfloat("er_p_scale", 3.0)
+    if syb_bid_mode == "same":
+        syb_bid = bids[attacker]
+    elif syb_bid_mode == "high":
+        syb_bid = max(100, bids[attacker] + 20)
+    elif syb_bid_mode == "low":
+        syb_bid = max(1, bids[attacker] // 4)
+    else:
+        syb_bid = bids[attacker]
 
-    all_rows = []
-    per_run_dir.mkdir(parents=True, exist_ok=True)
-    for valuation_mode in valuation_modes:
-        for diffusion_strategy in diffusion_strategies:
-            per_run_path = per_run_dir / f"{valuation_mode}_{diffusion_strategy}.csv"
-            effective_invite_prob = invite_prob if diffusion_strategy == "probabilistic" else 1.0
-            rows = sweep(
-                out_csv=str(per_run_path),
-                seeds=seeds,
-                sizes=sizes,
-                topologies=topologies,
-                valuation_mode=valuation_mode,
-                diffusion_strategy=diffusion_strategy,
-                mechanisms=mechanisms,
-                invite_prob=effective_invite_prob,
-                tree_branching=tree_branching,
-                ba_m=ba_m,
-                er_p_max=er_p_max,
-                er_p_scale=er_p_scale,
+    builder = apply_chain_attack if attack_mode == "chain" else apply_star_attack
+    seller_net_a, reports_a, bids_a, owner_a = builder(seller_net, reports, bids, attacker, q, syb_bid=syb_bid)
+
+    alloc_g, pay_g = gidm(k, seller_net_a, reports_a, bids_a)
+    m_g = mechanism_metrics(alloc_g, pay_g, owner_a, bids, attacker)
+    m_g["attacker_gain"] = m_g["attacker_utility"] - base["attacker_utility"]
+
+    alloc_sc, pay_sc = sc_gidm(k, seller_net_a, reports_a, bids_a, owner_a)
+    m_sc = mechanism_metrics(alloc_sc, pay_sc, owner_a, bids, attacker)
+    m_sc["attacker_gain"] = m_sc["attacker_utility"] - base["attacker_utility"]
+
+    alloc_lv, pay_lv = local_k_vickrey(k, seller_net, bids)
+    m_lv = mechanism_metrics(alloc_lv, pay_lv, owner0, true_values, attacker)
+
+    row = {
+        "seed": seed,
+        "model": model,
+        "q": q,
+        "attacker": attacker,
+        "attacker_value": bids[attacker],
+    }
+    for prefix, data in [("base_gidm", base), ("attacked_gidm", m_g), ("sc_gidm", m_sc), ("local_k_vickrey", m_lv)]:
+        for k2, v in data.items():
+            row[f"{prefix}_{k2}"] = v
+    return row
+
+
+def canonical_family():
+    seller_net = ["b1", "b3"]
+    reports = {
+        "b0": ["b2", "b4", "b6"],
+        "b1": ["b3", "b7"],
+        "b2": ["b0", "b7"],
+        "b3": ["b1"],
+        "b4": ["b0", "b5"],
+        "b5": ["b4"],
+        "b6": ["b0"],
+        "b7": ["b1", "b2"],
+    }
+    bids = {"b0": 98, "b1": 34, "b2": 5, "b3": 1, "b4": 19, "b5": 85, "b6": 76, "b7": 61}
+    return seller_net, reports, bids, "b0", 3
+
+
+def run_canonical(out_dir):
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    seller_net, reports, bids, attacker, k = canonical_family()
+    base_alloc, base_pay = gidm(k, seller_net, reports, bids)
+    base_owner = truthful_owner(seller_net, reports)
+    base_utility = utility_single_unit(base_alloc, base_pay, base_owner, bids)[attacker]
+
+    rows = []
+    for q in range(0, 6):
+        if q == 0:
+            owner = base_owner
+            alloc_g, pay_g = base_alloc, base_pay
+            alloc_sc, pay_sc = base_alloc, base_pay
+        else:
+            seller_net_a, reports_a, bids_a, owner = apply_chain_attack(
+                seller_net, reports, bids, attacker, q, syb_bid=bids[attacker]
             )
-            all_rows.extend(rows)
+            alloc_g, pay_g = gidm(k, seller_net_a, reports_a, bids_a)
+            alloc_sc, pay_sc = sc_gidm(k, seller_net_a, reports_a, bids_a, owner)
 
-    if not all_rows:
-        raise RuntimeError("No simulation rows were generated. Check config settings.")
+        for mech, alloc, pay in [("GIDM", alloc_g, pay_g), ("SC-GIDM", alloc_sc, pay_sc)]:
+            utility = utility_single_unit(alloc, pay, owner, bids)[attacker]
+            rows.append(
+                {
+                    "q": q,
+                    "mechanism": mech,
+                    "attacker_utility": utility,
+                    "attacker_gain": utility - base_utility,
+                    "fake_winners": fake_winner_count(alloc),
+                    "real_welfare": real_welfare(alloc, owner, bids),
+                    "revenue": seller_revenue(pay),
+                }
+            )
 
-    raw_results.parent.mkdir(parents=True, exist_ok=True)
-    with raw_results.open("w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=sorted(all_rows[0].keys()))
-        writer.writeheader()
-        writer.writerows(all_rows)
+    df = pd.DataFrame(rows)
+    df.to_csv(out_dir / "canonical_family.csv", index=False)
 
-    summary_rows = summarize(all_rows)
-    summary_results.parent.mkdir(parents=True, exist_ok=True)
-    with summary_results.open("w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=sorted(summary_rows[0].keys()))
-        writer.writeheader()
-        writer.writerows(summary_rows)
+    fig, ax = plt.subplots(figsize=(7, 4))
+    for mech in ["GIDM", "SC-GIDM"]:
+        sub = df[df["mechanism"] == mech]
+        ax.plot(sub["q"], sub["attacker_gain"], marker="o", label=mech)
+    ax.set_xlabel("Number of Sybils q")
+    ax.set_ylabel("Attacker gain")
+    ax.set_title("Canonical family: attacker gain under a chain Sybil attack")
+    ax.axhline(0, linestyle="--", linewidth=1)
+    ax.legend()
+    fig.tight_layout()
+    fig.savefig(out_dir / "canonical_attacker_gain.png", dpi=200)
+    plt.close(fig)
 
-    print(f"wrote {len(all_rows)} rows to {raw_results}")
-    print(f"wrote {len(summary_rows)} summary rows to {summary_results}")
 
-    # Always plot after simulation run.
-    plot_main(path=str(raw_results), out_dir=str(plot_dir), config_path=config_path)
+def run_random_experiments(out_dir, seeds=100, n=20, k=4, seller_deg=3, attack_mode="chain", syb_bid_mode="same"):
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    rows = []
+    for model in ["tree", "er"]:
+        for q in range(0, 5):
+            for seed in range(seeds):
+                row = run_single(seed, model, q, k, n, seller_deg, attack_mode, syb_bid_mode)
+                rows.append(row)
+
+    df = pd.DataFrame(rows)
+    df.to_csv(out_dir / "random_experiments.csv", index=False)
+
+    summary = (
+        df.groupby(["model", "q"])[
+            [
+                "attacked_gidm_welfare",
+                "sc_gidm_welfare",
+                "attacked_gidm_revenue",
+                "sc_gidm_revenue",
+                "attacked_gidm_fake_winners",
+                "sc_gidm_fake_winners",
+            ]
+        ]
+        .mean()
+        .reset_index()
+    )
+    summary.to_csv(out_dir / "random_summary.csv", index=False)
+
+    for model in ["tree", "er"]:
+        sub = summary[summary["model"] == model]
+
+        fig, ax = plt.subplots(figsize=(7, 4))
+        ax.plot(sub["q"], sub["attacked_gidm_welfare"], marker="o", label="Attacked GIDM")
+        ax.plot(sub["q"], sub["sc_gidm_welfare"], marker="s", label="SC-GIDM")
+        ax.set_xlabel("Number of Sybils q")
+        ax.set_ylabel("Average real welfare")
+        ax.set_title(f"Real welfare under Sybil attacks ({model})")
+        ax.legend()
+        fig.tight_layout()
+        fig.savefig(out_dir / f"welfare_{model}.png", dpi=200)
+        plt.close(fig)
+
+        fig, ax = plt.subplots(figsize=(7, 4))
+        ax.plot(sub["q"], sub["attacked_gidm_fake_winners"], marker="o", label="Attacked GIDM")
+        ax.plot(sub["q"], sub["sc_gidm_fake_winners"], marker="s", label="SC-GIDM")
+        ax.set_xlabel("Number of Sybils q")
+        ax.set_ylabel("Average number of fake winners")
+        ax.set_title(f"Fake allocations under Sybil attacks ({model})")
+        ax.legend()
+        fig.tight_layout()
+        fig.savefig(out_dir / f"fake_winners_{model}.png", dpi=200)
+        plt.close(fig)
+
+        fig, ax = plt.subplots(figsize=(7, 4))
+        ax.plot(sub["q"], sub["attacked_gidm_revenue"], marker="o", label="Attacked GIDM")
+        ax.plot(sub["q"], sub["sc_gidm_revenue"], marker="s", label="SC-GIDM")
+        ax.set_xlabel("Number of Sybils q")
+        ax.set_ylabel("Average seller revenue")
+        ax.set_title(f"Seller revenue under Sybil attacks ({model})")
+        ax.legend()
+        fig.tight_layout()
+        fig.savefig(out_dir / f"revenue_{model}.png", dpi=200)
+        plt.close(fig)
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--out_dir", default="results")
+    parser.add_argument("--seeds", type=int, default=100)
+    args = parser.parse_args()
+
+    out_dir = Path(args.out_dir)
+    run_canonical(out_dir)
+    run_random_experiments(out_dir, seeds=args.seeds)
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Run referral-auction simulations from config.ini and generate plots.")
-    parser.add_argument("--config", default="config.ini", help="Path to config.ini")
-    args = parser.parse_args()
-    run_from_config(args.config)
+    main()

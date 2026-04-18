@@ -1,1 +1,0 @@
-# This simulator intentionally uses only the Python standard library.
