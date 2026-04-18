@@ -1518,9 +1518,9 @@ for intermediary clusters. (Sign convention follows GIDM transfer notation.)
 \begin{column}{0.44\textwidth}
 \begin{itemize}
     \item Multiple fake bids become one effective cluster bid.
-    \item Multiple fake positions become one graph position.
+      \item Multiple fake positions become one graph position.
     \item If someone bids less than the max bid of its cluster, they are not critical for winning or pricing.
-    \item If someone creats sybil nodes to outbid the real winner, they a
+    \item If someone creats sybil nodes to outbid the cluster max bid, they themselves would become the winner, and overbidding is harmful for a node as GIDM is IC.
 \end{itemize}
 % \greenblock{Therefore}{The attack has no additional strategic degree of freedom beyond the real buyer's cluster-level report.}
 \end{column}
