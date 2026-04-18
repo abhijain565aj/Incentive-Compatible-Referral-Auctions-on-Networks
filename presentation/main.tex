@@ -704,6 +704,58 @@ Since $k=1$ is a special case, any multi-item extension that contains IDM-like b
 \end{frame}
 
 % -----------------------------------------------------------------------------
+\begin{frame}{SC-GIDM formalization: Phase 1 and Phase 2}
+\small
+\begin{block}{Phase 1: structural abstraction via dominator clusters}
+Given reported graph $G(\theta')$, compute dominator tree $T_{dom}$ rooted at seller $s$.
+For each node $i$ with $\mathrm{idom}(i)=s$, define
+\[
+  V_i = \{j\in N\mid i\text{ dominates }j\}\cup\{i\}.
+\]
+This yields disjoint clusters $\Ccal=\{V_1,\dots,V_m\}$ and a macro DAG $G_{cluster}$ with
+\[
+  (V_i,V_j)\in E(G_{cluster})\iff \exists u\in V_i,\exists v\in V_j:(u,v)\in E(G(\theta')).
+\]
+\end{block}
+
+\begin{block}{Phase 2: capacity restriction and bid aggregation}
+For each cluster $V_i$, enforce unit capacity and define effective bid
+\[
+  v^*_{V_i}=\max_{j\in V_i} v'_j, \qquad \text{cap}(V_i)=1.
+\]
+Hence internal Sybil volume does not change macro demand: many fake nodes still induce one macro bidder.
+\end{block}
+
+\greenblock{Topological insight}{Under non-colluding Sybil attacks, fake identities remain inside the attacker's cluster; they do not create new external incoming edges into that cluster.}
+\end{frame}
+
+% -----------------------------------------------------------------------------
+\begin{frame}{SC-GIDM formalization: Phase 3 and Phase 4}
+\small
+\begin{block}{Phase 3: clustered GIDM allocation on $G_{cluster}$}
+Run GIDM on macro nodes $(V_i,v^*_{V_i})$ with $K$ items:
+\begin{itemize}
+  \item compute top-$K$ macro winners and the critical macro allocation structure,
+  \item route items by GIDM's DFS/stack logic,
+  \item apply macro displacement when an upstream macro node outbids downstream critical nodes.
+\end{itemize}
+\end{block}
+
+\begin{block}{Phase 4: settlement and intra-cluster assignment}
+If cluster $V_i$ wins, assign the physical item to a node $j\in V_i$ with $v'_j=v^*_{V_i}$.
+Cluster-level transfer (GIDM form on macro graph):
+\[
+  x_{V_i}=SW^{macro}_{-D_{V_i}}-\big(SW^{macro}_{-C^K_{V_i}}-v^*_{V_i}\big)
+\]
+for winning clusters, and
+\[
+  x_{V_i}=SW^{macro}_{-D_{V_i}}-SW^{macro}_{-C^K_{V_i}}
+\]
+for intermediary clusters. (Sign convention follows GIDM transfer notation.)
+\end{block}
+\end{frame}
+
+% -----------------------------------------------------------------------------
 \begin{frame}{Assumptions: what exactly are we proving?}
 \begin{columns}[T,totalwidth=\textwidth]
 \begin{column}{0.49\textwidth}
@@ -734,22 +786,19 @@ We are not solving the general Sybil detection problem. We are proving that \emp
 \end{frame}
 
 % -----------------------------------------------------------------------------
-\begin{frame}{Main theorem package}
-\begin{theorem}[Reduction]
-Under perfect clustering, SC-GIDM on the reported graph is outcome-equivalent to GIDM on the true real-agent graph.
+\begin{frame}{Correctness verification for SC-GIDM}
+\begin{theorem}[Reduction under assumptions]
+With perfect cluster recovery, no collusion, and unit-demand physical agents, SC-GIDM on the reported graph is strategically equivalent to running GIDM on the induced cluster graph.
 \end{theorem}
-\vspace{-1mm}
-\begin{proof}[Proof idea]
-All identities of a real buyer contract into one cluster. Internal fake paths vanish. No fake can create a new real incoming edge. Hence the quotient graph has the same real reachability structure.
-\end{proof}
+
 \vspace{1mm}
-\greenblock{Consequences}{
-\begin{itemize}
-    \item IR and IC transfer from GIDM on the quotient graph.
-    \item Non-deficit / seller-revenue guarantees transfer from GIDM.
-    \item Sybil-proofness follows because fake identities do not change the quotient instance.
-\end{itemize}
-}
+\begin{enumerate}
+  \item \textbf{IR:} cluster-level winner utility is nonnegative by inherited GIDM threshold logic; thus truthful physical agents are ex-post IR.
+  \item \textbf{DSIC (cluster level):} once clustering is fixed, each cluster behaves as one bidder in GIDM; truthful effective reporting is dominant.
+  \item \textbf{Sybil-proofness (non-colluding split attacks):} fake identities remain internal to one cluster, capacity stays $1$, and macro routing/pricing depends only on cluster-level structure and $v^*_{V_i}$.
+\end{enumerate}
+
+\greenblock{Important caveat}{If clustering is noisy or collusion creates cross-cluster coordination, guarantees become approximate/empirical rather than theorem-level.}
 \end{frame}
 
 % -----------------------------------------------------------------------------
