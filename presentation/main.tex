@@ -224,7 +224,7 @@ For one item, welfare is value of the winner. For $k$ items, sum of values of re
 \end{frame}
 
 % -----------------------------------------------------------------------------
-\begin{frame}{Toy example: VCG can create seller deficit}
+\begin{frame}{Toy example}
 \centering
 \begin{columns}
 \begin{column}{0.48\textwidth}
@@ -233,6 +233,7 @@ For one item, welfare is value of the winner. For $k$ items, sum of values of re
     \begin{tikzpicture}[scale=1.00]
       \tikzset{
         smallbuyer/.append style={minimum size=4.8mm, inner sep=0.5pt, font=\tiny},
+        winner/.append style={minimum size=4.8mm, inner sep=0.5pt, font=\tiny},
         seller/.append style={minimum size=6.8mm}
       }
         % -------- (a) social network --------
@@ -270,9 +271,10 @@ For one item, welfare is value of the winner. For $k$ items, sum of values of re
       \node[font=\tiny] at (1.50,2.56) {J};
       \node[font=\tiny] at (1.55,-0.14) {K};
       \node[font=\tiny] at (2.40,0.13) {L};
-    \end{tikzpicture}
+    \end{tikzpicture}  
     \caption{Social Network}
   \end{figure}
+
 \end{column}
 \begin{column}{0.48\textwidth}
   \begin{figure}
@@ -280,6 +282,7 @@ For one item, welfare is value of the winner. For $k$ items, sum of values of re
     \begin{tikzpicture}[scale=1.00]
       \tikzset{
         smallbuyer/.append style={minimum size=4.8mm, inner sep=0.5pt, font=\tiny},
+        winner/.append style={minimum size=4.8mm, inner sep=0.5pt, font=\tiny},
         seller/.append style={minimum size=6.8mm}
       }
             % -------- (b) diffusion network --------
@@ -320,10 +323,89 @@ For one item, welfare is value of the winner. For $k$ items, sum of values of re
     \end{tikzpicture}
     \caption{Corresponding Diffusion Network}
   \end{figure}
+
 \end{column}
 \end{columns}
 \end{frame}
+\begin{frame}{Toy example: VCG vs IDM}
+\begin{columns}
+\begin{column}{0.48\textwidth}
+\greenblock{VCG}{
+\begin{itemize}
+    \item Winner: L(13)
+    \item Final payments:
+    \[
+    L(13)\rightarrow +12,\quad C(2)\rightarrow -3,\quad I(12)\rightarrow -2
+    \]
+    \item Seller revenue:
+    \impterm{+7}
+\end{itemize}
+}
 
+\vspace{1mm}
+
+\greenblock{IDM}{
+\begin{itemize}
+    \item Winner: I(12)
+    \item Final payments:
+    \[
+    C(2)\rightarrow -1,\quad I(12)\rightarrow +11
+    \]
+    \item Seller revenue:
+    \impterm{+10}
+\end{itemize}
+}
+\end{column}
+\begin{column}{0.48\textwidth}
+\begin{figure}
+    \centering
+    \begin{tikzpicture}[scale=1.00]
+      \tikzset{
+        smallbuyer/.append style={minimum size=4.8mm, inner sep=0.5pt, font=\tiny},
+        winner/.append style={minimum size=4.8mm, inner sep=0.5pt, font=\tiny},
+        seller/.append style={minimum size=6.8mm}
+      }
+            % -------- (b) diffusion network --------
+      \node[seller] (sR) at (6.0,3.5) {$s$};
+      \node[smallbuyer] (d1) at (4.7,2.35) {1};
+      \node[smallbuyer] (d3) at (6.0,2.35) {3};
+      \node[winner] (d2) at (7.4,2.35) {2};
+      \node[smallbuyer] (d5) at (4.9,1.35) {5};
+      \node[smallbuyer] (d7) at (6.0,1.35) {7};
+      \node[smallbuyer] (d10) at (4.2,0.55) {10};
+      \node[smallbuyer] (d8) at (5.3,0.55) {8};
+      \node[smallbuyer] (d6) at (5.3,-0.35) {6};
+      \node[smallbuyer] (d11) at (6.7,0.55) {11};
+      \node[winner] (d12) at (7.7,0.55) {12};
+      \node[winner] (d13) at (7.7,-0.35) {13};
+      \node[smallbuyer] (d4) at (8.5,0.75) {4};
+
+      \draw[arrow] (sR)--(d1); \draw[arrow] (sR)--(d3); \draw[arrow] (sR)--(d2);
+      \draw[arrow] (d1)--(d5);
+      \draw[arrow] (d3)--(d7);
+      \draw[arrow] (d2)--(d7); \draw[arrow] (d2)--(d11); \draw[arrow] (d2)--(d12); \draw[arrow] (d2)--(d4);
+      \draw[arrow] (d5)--(d7); \draw[arrow] (d5)--(d10); \draw[arrow] (d5)--(d8);
+      \draw[arrow] (d8)--(d6);
+      \draw[arrow] (d11)--(d12); \draw[arrow] (d12)--(d13);
+
+      \node[font=\tiny] at (4.26,2.17) {A};
+      \node[font=\tiny] at (5.57,2.18) {B};
+      \node[font=\tiny] at (7.00,2.25) {C};
+      \node[font=\tiny] at (4.51,1.20) {D};
+      \node[font=\tiny] at (6.40,1.19) {E};
+      \node[font=\tiny] at (4.55,0.35) {F};
+      \node[font=\tiny] at (5.65,0.35) {G};
+      \node[font=\tiny] at (6.30,0.36) {H};
+      \node[font=\tiny] at (8.05,0.36) {I};
+      \node[font=\tiny] at (8.85,0.66) {J};
+      \node[font=\tiny] at (5.65,-0.56) {K};
+      \node[font=\tiny] at (8.05,-0.56) {L};
+    \end{tikzpicture}
+    \caption{Critical sequence highlighted}
+  \end{figure}
+\end{column}
+\end{columns}
+\end{frame}
 % -----------------------------------------------------------------------------
 \begin{frame}{What remains challenging even after IDM?}
 \begin{columns}[T,totalwidth=\textwidth]
