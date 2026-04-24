@@ -1,49 +1,86 @@
+# Paper-aligned simulator for GIDM and SC-GIDM
 
-# Sybil-Robust Multi-Item Diffusion Auctions
+This package is a clean rebuild aimed at the project's actual mechanism, rather than the earlier exploratory simulator.
 
-This folder contains the simulator used in the project report and presentation.
+## What it implements
 
-## What is implemented
+- **GIDM-style allocation and payment core** on the **optimal allocation tree / dominator tree** representation.
+- **SC-GIDM** with:
+  - dominator clustering,
+  - macro-cluster DAG construction,
+  - SCM-style random shortest-path tree sampling on the cluster graph,
+  - macro GIDM,
+  - lifting back to identities where a winning cluster gives the item to its highest bidder and an intermediary cluster routes reward to its root.
+- **Split attacks** where one real buyer creates fake descendants.
+- Metrics for:
+  - seller revenue,
+  - attacker utility,
+  - attacker reward mass,
+  - real welfare,
+  - fake winners,
+  - reward mass to fake nodes,
+  - reward mass to real nodes.
 
-- `local_k_vickrey`: local homogeneous-item auction among seller neighbours only.
-- `gidm`: adapted implementation of the baseline GIDM mechanism for multiple homogeneous items.
-- `sc_gidm`: our proposed cluster-reduction mechanism:
-  1. contract reported identities into Sybil clusters,
-  2. keep only the certified non-Sybil root bid for each cluster,
-  3. run GIDM on the cluster graph.
+## Important scope note
 
-The baseline GIDM code is adapted from an MIT-licensed public implementation and repackaged here with attribution.
+This code is the **best project-relevant simulator** for the current work. It is much closer to the paper pseudocode than the earlier exploratory code because it explicitly models:
 
-## Structure
+- the optimal allocation tree / dominator-tree backbone,
+- DFS/LIFO-style GIDM processing,
+- displacement bookkeeping through `GetFrom`,
+- welfare-counterfactual payments,
+- SCM-style tree sampling in SC-GIDM.
 
-- `src/gidm_adapted.py` - baseline GIDM and local baseline.
-- `src/cluster_gidm.py` - SC-GIDM.
-- `src/attacks.py` - star/chain Sybil attack generators.
-- `src/sim_utils.py` - graph generators and attacker selection.
-- `src/utils.py` - welfare, utility, fake-winner metrics.
-- `run_experiments.py` - regenerate all tables/plots used in the report.
+However, this is still a **research implementation**, not an official reproduction package from the original authors. The intended use is:
 
-## Reproducing the main results
+1. reproduce the project's running examples,
+2. compare GIDM vs SC-GIDM on random graph families,
+3. inspect how attacks change revenue and reward distribution.
+
+## Files
+
+- `src/gidm_tree.py` — paper-aligned GIDM core.
+- `src/sc_gidm.py` — SC-GIDM wrapper.
+- `src/graph_utils.py` — dominators, clusters, shortest-path tree sampling.
+- `src/attacks.py` — split attacks.
+- `src/metrics.py` — welfare/revenue/reward accounting.
+- `src/examples.py` — your presentation example graphs.
+- `run_examples.py` — runs the user/presentation example and writes `results/user_examples.json`.
+- `run_random_study.py` — random benchmarks on a Price-style DAG family.
+- `plot_results.py` — generate plots from benchmark summaries.
+
+## Usage
+
+Run the presentation/user example:
 
 ```bash
-cd code
-python run_experiments.py --out_dir results --seeds 120
+python run_examples.py
 ```
 
-This writes:
+Run random comparisons:
 
-- `results/canonical_family.csv`
-- `results/random_experiments.csv`
+```bash
+python run_random_study.py --out_dir results --seeds 200 --n 100 --m 2 --K 5 --qmax 4
+```
+
+Generate plots:
+
+```bash
+python plot_results.py --results_dir results
+```
+
+## Output
+
+- `results/user_examples.json`
+- `results/random_study.csv`
 - `results/random_summary.csv`
-- `results/*.png` plots used in the report
+- one plot per metric
 
-## Important modelling assumptions
+## Recommended sanity checks
 
-Our theorem-level claims are for:
+Before trusting large experiments, first inspect `results/user_examples.json` and check:
 
-- homogeneous items,
-- single-unit demand,
-- no collusion across real buyers,
-- a perfect Sybil-cluster oracle with a certified non-Sybil root per cluster.
-
-The simulations use the ground-truth owner map as the oracle.
+- GIDM on the truthful user graph,
+- GIDM under the fake-child attack,
+- SC-GIDM on the attacked graph,
+- the change in the **attacker's reward mass** and **attacker utility**.
