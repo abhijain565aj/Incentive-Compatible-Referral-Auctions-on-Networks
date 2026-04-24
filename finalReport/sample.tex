@@ -81,11 +81,13 @@ Diffusion auctions sell items through a social network: buyers not only bid, but
 \maketitle
 
 \section{Introduction}
-Classical auction theory assumes that the seller can directly contact all participants. In many real social-network markets this assumption is implausible. A seller can initially reach only her neighbors, and information about the auction propagates further only when informed buyers decide to forward it. This creates the central tension in diffusion auctions: a buyer may benefit from the seller's broader reach, but may also dislike informing future competitors. Li et al. formalized this setting for a single item and showed that the information diffusion mechanism (IDM) is individually rational (IR), incentive compatible (IC), and weakly budget balanced, whereas a direct network-VCG extension may create deficit \cite{LiHZZ17}. Zhao et al. then extended the framework to $K$ homogeneous items with single-unit-demand buyers via GIDM \cite{ZhaoLXHJ18}. 
+Classical auction theory assumes that the seller can directly contact all relevant participants. In social-network markets this assumption is unrealistic. A seller can usually inform only a small neighborhood, and more distant buyers learn about the auction only when already informed agents choose to propagate the information. This creates the central tension in diffusion auctions: a buyer can help the seller reach new participants, but may simultaneously dislike inviting stronger competitors.
 
-A second difficulty is robustness. Chen et al. showed that graph-dependent rewards make diffusion mechanisms vulnerable to \emph{Sybil attacks}, in which a real buyer creates fake identities to alter the critical positions used for pricing and rewards \cite{ChenDWWZ23}. Their paper develops the single-item mechanisms STM and SCM and explicitly leaves the multi-item case as future work. This report studies that open direction.
+This setting is not merely a theoretical curiosity. Referral-based commerce, community-driven resale platforms, creator-led product launches, and social coupon campaigns all rely on network propagation. In such applications, the auctioneer does not observe the full market directly and must instead incentivize information flow through strategic buyers. A mechanism that ignores the propagation stage can miss high-value buyers entirely. A mechanism that rewards propagation too aggressively, however, may pay too much to intermediaries or become vulnerable to manipulation.
 
-Our goal is deliberately narrow. We do not attempt a complete false-name-proof solution for arbitrary combinatorial settings. Instead, we focus on the setting suggested by the baseline papers: the seller holds $K\ge 1$ homogeneous items, every physical buyer is unit demand, and Sybil attacks are non-colluding split attacks. In this setting we propose \emph{SC-GIDM} (Sybil-Cluster GIDM), a mechanism that first compresses the reported graph into dominator clusters and then runs GIDM on the resulting macro graph.
+Li et al. formalized this setting for one item and showed that the information diffusion mechanism (IDM) is individually rational (IR), incentive compatible (IC), and weakly budget balanced, whereas a direct network-VCG extension may create deficit \cite{LiHZZ17}. Zhao et al. then extended the framework to $K$ homogeneous items with single-unit-demand buyers via GIDM \cite{ZhaoLXHJ18}. A second difficulty is robustness. Chen et al. showed that graph-dependent rewards make diffusion mechanisms vulnerable to \emph{Sybil attacks}, in which a real buyer creates fake identities to alter the critical positions used for pricing and rewards \cite{ChenDWWZ23}. Their paper develops the single-item mechanisms STM and SCM and explicitly leaves the multi-item case as future work.
+
+This report studies that open direction. Our goal is deliberately narrow. We do not attempt a complete false-name-proof solution for arbitrary combinatorial settings. Instead, we focus on the setting suggested by the baseline papers: the seller holds $K\ge 1$ homogeneous items, every physical buyer is unit demand, and Sybil attacks are non-colluding split attacks. In this setting we propose \emph{SC-GIDM} (Sybil-Cluster GIDM), a mechanism that first compresses the reported graph into dominator clusters and then runs GIDM on the resulting macro graph. The clustering step is meant to isolate the exact graph feature that Sybil attacks exploit: the ability to manufacture new graph positions that appear to be independent intermediaries.
 
 \subsection{Contributions}
 Our report makes three contributions.
@@ -135,7 +137,7 @@ A mechanism is weakly budget balanced if the seller revenue is nonnegative on ev
 
 We consider the following attack model.
 \begin{definition}[Non-colluding split attack]
-A split attack by buyer $x$ replaces $x$ by a finite set of fake identities controlled only by $x$. Every incoming edge of a fake identity must originate from $x$ or from another fake identity created by $x$; in particular, honest external buyers do not create new incoming edges toward the fake identities. Outgoing edges of $x$ may be redistributed among $x$ and its fake identities. Distinct real buyers do not collude.
+A split attack by buyer $x$ replaces $x$ by a finite set of fake identities controlled only by $x$. Every incoming edge of a fake identity must originate from $x$ or from another fake identity created by $x$; in particular, honest external buyers do not create new incoming edges toward the fake identities. Outgoing edges of $x$ may be redistributed among $x$ and its fake identities, but the attack does not create new honest neighbors. Distinct real buyers do not collude.
 \end{definition}
 
 The dominator relation is computed in the reported graph rooted at $s$. For a buyer $u$, let $\idom(u)$ denote its immediate dominator. For each node $i$ satisfying $\idom(i)=s$, define the cluster
@@ -177,6 +179,13 @@ The family of such sets is denoted by $\Ccal=\{V_1,\dots,V_m\}$. Since children 
 \caption{The guiding idea of SC-GIDM. A buyer may create fake identities inside its dominator region, but these fake nodes do not form a new macro node. GIDM is run only on the cluster graph.}
 \label{fig:cluster}
 \end{figure}
+
+\section{Why Clustering Helps: A Running Example}
+Before presenting the formal mechanism, it is useful to see the role of clustering on a small example. Suppose the seller $s$ reaches two primary branches through buyers $a$ and $b$. Buyer $a$ dominates a high-value subtree containing $c$, while buyer $b$ dominates a different subtree containing $d$. In the ordinary identity-level graph, buyer $b$ may create fake identities below itself and attempt to appear as multiple intermediaries. If the mechanism directly rewards graph positions, these new identities can distort the apparent structure of the diffusion process.
+
+SC-GIDM does not evaluate the attacked identity graph directly. It first asks which nodes are dominated by each seller-child. In the example of Figure~\ref{fig:cluster}, every fake identity created by $b$ remains in the same dominator region as $b$ and is therefore absorbed into the same cluster $V_b$. Thus the attacked micro-graph is reduced to the same two macro-nodes $V_a$ and $V_b$. Whatever happens internally inside $V_b$ no longer changes the macro graph. This is precisely the point where our approach differs from ordinary diffusion mechanisms: we do not try to price the attacked micro-structure; we remove that micro-structure before running GIDM.
+
+A second example clarifies the conservative nature of the macro bid rule. Suppose $K=1$, cluster $V_a$ has root bid $9$, cluster $V_b$ has root bid $7$, and a fake child inside $V_b$ reports $100$. Since SC-GIDM uses the cluster root bid $\widehat b_{V_b}=v'_{\rhoC(V_b)}=7$, the fake internal bid does not change the macro instance at all. Consequently, if GIDM would choose $V_a$ on the truthful macro graph, it still chooses $V_a$ after the split attack. This is the main robustness tradeoff embodied in the mechanism: the cluster abstraction discards some internal information, but in exchange it makes internal false-name manipulation strategically irrelevant.
 
 \section{Formal Algorithmic Description of SC-GIDM}
 \begin{framed}
@@ -221,7 +230,7 @@ Given the reported type profile $\theta'=(G(\theta'),(v'_i)_{i\in N})$ and $K$ h
   SW^{\mathrm{macro}}_{-D_{V_i}}-SW^{\mathrm{macro}}_{-C^K_{V_i}},
   & \text{if } V_i\in I^*(\theta')\setminus W^*(\theta'),\\[1ex]
   0,
-  & \text{otherwise.}
+  & \text{otherwise,}
   \end{cases}
   \]
   where
@@ -253,7 +262,43 @@ Given the reported type profile $\theta'=(G(\theta'),(v'_i)_{i\in N})$ and $K$ h
 \end{enumerate}
 \end{framed}
 
-The mechanism therefore has a clear division of labor: all price and reward computation happens at the cluster level, and all monetary transfer is settled only through the cluster root. Internal fake identities do not receive independent reward positions.
+The mechanism therefore has a clear division of labor: all price and reward computation happens at the cluster level, and all monetary transfer is settled only through the cluster root. Internal fake identities do not receive independent reward positions. The use of the root bid is conservative but deliberate: it ensures that a buyer cannot improve the macro instance merely by creating a fake high-bid descendant.
+
+\begin{figure}[t]
+\centering
+\begin{minipage}[t]{0.48\columnwidth}
+\centering
+\begin{tikzpicture}[x=0.9cm,y=0.9cm,>=Latex,baseline=(current bounding box.north)]
+\node[seller] (s) at (0,1.5) {$s$};
+\node[agent] (a) at (1.4,2.3) {$a$};
+\node[agent] (b) at (1.4,0.7) {$b$};
+\node[agent] (c) at (3.0,2.5) {$c$};
+\node[agent] (d) at (3.0,1.5) {$d$};
+\node[agent] (e) at (3.0,0.3) {$e$};
+\node[sybil] (f) at (4.6,0.3) {$e'$};
+\draw[->] (s)--(a); \draw[->] (s)--(b);
+\draw[->] (a)--(c); \draw[->] (a)--(d);
+\draw[->] (b)--(e); \draw[->] (e)--(f);
+\node[clusterbox,fit=(a)(c)(d)] {};
+\node[clusterbox,fit=(b)(e)(f)] {};
+\end{tikzpicture}
+\smallskip
+\small Identity graph with one split attack
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\columnwidth}
+\centering
+\begin{tikzpicture}[x=1.0cm,y=1.0cm,>=Latex,baseline=(current bounding box.north)]
+\node[seller] (s) at (0,1.2) {$s$};
+\node[agent] (va) at (2.0,2.0) {$V_a\,(\widehat b=8)$};
+\node[agent] (vb) at (2.0,0.4) {$V_b\,(\widehat b=6)$};
+\draw[->] (s)--(va); \draw[->] (s)--(vb);
+\end{tikzpicture}
+\smallskip
+\small Same macro instance before and after the split attack
+\end{minipage}
+\caption{A concrete example run. Even if the fake node $e'$ reports a larger bid than $b$, the macro bid of $V_b$ remains the root bid of $b$. Hence the cluster graph and its bids are unchanged.}
+\label{fig:run}
+\end{figure}
 
 \section{Main Results}
 We begin with the structural fact behind the Sybil-proofness argument.
@@ -271,7 +316,9 @@ The next lemma explains why splitting cannot alter the macro instance seen by GI
 Fix a real buyer $x$ and let $V_i$ be the cluster containing $x$. Under any non-colluding split attack by $x$, the family of clusters outside $V_i$ is unchanged, no new cluster is created, and every monetary transfer generated by SC-GIDM remains attached to the same set of cluster roots as before. The only effect of the attack is an internal modification of $V_i$.
 \end{lemma}
 \begin{proof}
-By Lemma~\ref{lem:containment}, every fake identity created by $x$ remains inside $V_i$. Therefore no new cluster appears in the partition $\Ccal$, and every cluster different from $V_i$ keeps exactly the same vertex set as before. Since SC-GIDM computes rewards and payments only after building the macro graph $\QG$, and these transfers are defined only for clusters and paid only to cluster roots, fake identities do not become new payment-receiving positions. In particular, splitting $x$ changes only the internal structure of the already existing cluster $V_i$.
+By Lemma~\ref{lem:containment}, every fake identity created by $x$ remains inside $V_i$. Therefore no new cluster appears in the partition $\Ccal$, and every cluster different from $V_i$ keeps exactly the same vertex set as before. Since the attack does not create new honest neighbors, the set of external clusters adjacent to $V_i$ is also unchanged: the attacker may redistribute outgoing edges among $x$ and its fake identities, but all those outgoing edges still target the same pre-existing honest neighborhoods. Hence the macro graph $\QG$ does not gain new vertices or new macro adjacency patterns due to the split attack.
+
+Since SC-GIDM computes rewards and payments only after building the macro graph, and these transfers are defined only for clusters and paid only to cluster roots, fake identities do not become new payment-receiving positions. In particular, splitting $x$ changes only the internal structure of the already existing cluster $V_i$.
 \end{proof}
 
 We can now prove the main Sybil-proofness theorem.
@@ -282,7 +329,9 @@ Under the attack model of Section~3, a buyer cannot increase her utility by repl
 \begin{proof}
 Fix a real buyer $x$ and let $V_i$ be the cluster containing $x$. Consider any non-colluding split attack by $x$. By Lemma~\ref{lem:containment}, all fake identities created by $x$ remain inside $V_i$. By Lemma~\ref{lem:macro}, the attack creates no new cluster and no new rewarded macro position. Hence the attacker cannot manipulate the cluster graph on which GIDM is run.
 
-It follows that, from the viewpoint of the macro mechanism, the split attack does not create a new strategic player: the buyer $x$ and all her fake identities act only through the already existing cluster $V_i$. Since SC-GIDM runs GIDM on the cluster graph, the relevant strategic choices reduce to the cluster-level report of $V_i$ on that graph. GIDM is incentive compatible, so truthful bidding and forwarding to all neighbors is a dominant strategy on the macro instance \cite{ZhaoLXHJ18}. Therefore the split attack cannot generate strictly higher utility than the truthful cluster-level behavior.
+It follows that, from the viewpoint of the macro mechanism, the split attack does not create a new strategic player: the buyer $x$ and all her fake identities act only through the already existing cluster $V_i$. Moreover, because SC-GIDM uses the root bid $\widehat b_{V_i}=v'_{\rhoC(V_i)}$, fake descendants cannot alter the macro bid by overbidding internally. Therefore the entire effect of the split attack is equivalent to an internal re-expression of the same cluster-level participant already present in the macro instance.
+
+Since SC-GIDM runs GIDM on the cluster graph, the relevant strategic choices reduce to the cluster-level report of $V_i$ on that graph. GIDM is incentive compatible, so truthful bidding and forwarding to all neighbors is a dominant strategy on the macro instance \cite{ZhaoLXHJ18}. Therefore the split attack cannot generate strictly higher utility than the truthful cluster-level behavior.
 
 Finally, SC-GIDM settles payments and rewards only at cluster roots. Internal fake identities receive no direct reward and do not become independent recipients of intermediary transfers. Thus splitting cannot create extra payment or reward channels inside $V_i$. Consequently, buyer $x$ cannot improve her utility through a non-colluding split attack. Hence SC-GIDM is Sybil-proof.
 \end{proof}
@@ -299,13 +348,13 @@ Zhao et al. prove that GIDM is IR, IC, and weakly budget balanced for homogeneou
 \end{proof}
 
 \begin{remark}[On wastefulness]
-SC-GIDM is potentially wasteful only because every cluster has capacity one. If fewer than $K$ clusters are formed, then at most that many items can be allocated, so some items may remain unassigned. If at least $K$ reachable clusters exist, then the mechanism is non-wasteful at the macro level: the cluster graph contains enough unit-capacity macro bidders to absorb all $K$ items.
+SC-GIDM is potentially wasteful only because every cluster has capacity one. If fewer than $K$ clusters are formed, then at most that many items can be allocated, so some items may remain unassigned. If at least $K$ reachable clusters exist, then the mechanism is non-wasteful at the macro level: the cluster graph contains enough unit-capacity macro bidders to absorb all $K$ items. More generally, the mechanism trades some internal flexibility for robustness: once a large attacked region is compressed into one macro bidder, the seller cannot allocate multiple items inside that region even if several internal nodes are present.
 \end{remark}
 
 \section{Conclusions}
-The baseline papers suggest a natural path: IDM explains truthful diffusion for one item, GIDM extends this logic to multiple homogeneous items, and STM/SCM show that Sybil attacks fundamentally matter in graph-based reward mechanisms. Our report provides a restricted but mathematically explicit bridge between these directions. SC-GIDM first compresses the reported graph into dominator clusters and then executes GIDM on the resulting macro graph. The first main theorem shows that non-colluding split attacks cannot alter the macro graph because fake identities remain trapped inside an already existing cluster. The second theorem shows that SC-GIDM inherits the macro-level guarantees of GIDM. 
+The baseline papers suggest a natural path: IDM explains truthful diffusion for one item, GIDM extends this logic to multiple homogeneous items, and STM/SCM show that Sybil attacks fundamentally matter in graph-based reward mechanisms. Our report provides a restricted but mathematically explicit bridge between these directions. SC-GIDM first compresses the reported graph into dominator clusters and then executes GIDM on the resulting macro graph. The first main theorem shows that non-colluding split attacks cannot alter the macro graph because fake identities remain trapped inside an already existing cluster. The second theorem shows that SC-GIDM inherits the macro-level guarantees of GIDM.
 
-The main open issue is therefore no longer the cluster-level mechanism, but the clustering layer itself: obtaining robust cluster formation without assuming the particular attack structure used here remains an important next step.
+The main open issue is therefore no longer the cluster-level mechanism, but the clustering layer itself: obtaining robust cluster formation without assuming the particular attack structure used here remains an important next step. A second natural direction is to relax the conservative root-bid abstraction while preserving Sybil-proofness. This would require a more delicate argument about what information from within a cluster can safely influence the macro instance.
 
 \balance
 \bibliographystyle{ACM-Reference-Format}
