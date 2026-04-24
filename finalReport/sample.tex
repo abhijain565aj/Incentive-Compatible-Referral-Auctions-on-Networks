@@ -1,3 +1,4 @@
+
 \documentclass[sigconf]{aamas}
 
 \usepackage{balance}
@@ -6,6 +7,8 @@
 \usepackage{multirow}
 \usepackage{enumitem}
 \usepackage{microtype}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc,fit,backgrounds}
 
 \setcopyright{ifaamas}
 \acmConference[AAMAS '23]{Proc.\@ of the 22nd International Conference
@@ -59,29 +62,86 @@ on Autonomous Agents and Multiagent Systems (AAMAS 2023)}{May 29 -- June 2, 2023
 \newcommand{\SW}{\operatorname{SW}}
 \newcommand{\Rev}{\operatorname{Rev}}
 \newcommand{\util}{\operatorname{u}}
-\newcommand{\idom}{\operatorname{idom}}
 \newcommand{\argmax}{\operatorname*{arg\,max}}
+\newcommand{\ind}{\mathbf{1}}
+
+\tikzset{
+agent/.style={circle,draw,inner sep=1.6pt,minimum size=5.5mm,font=\scriptsize},
+seller/.style={rectangle,rounded corners,draw,inner sep=2pt,minimum width=6mm,minimum height=5mm,font=\scriptsize,fill=black!7},
+sybil/.style={circle,draw,dashed,inner sep=1.6pt,minimum size=5.5mm,font=\scriptsize,fill=black!4},
+clusterbox/.style={rounded corners,draw,densely dotted,inner sep=2pt}
+}
 
 \begin{abstract}
-Diffusion auctions sell items through a social network: buyers not only bid, but also decide whether to forward the auction information. The single-item mechanism of Li et al. resolves the diffusion problem but is vulnerable to fake identities; the Sybil-proof mechanisms of Chen et al. handle false-name manipulation only in the single-item setting; and the multi-item mechanism of Zhao et al. does not address Sybil attacks. We study the open direction at the intersection of these works: Sybil-robust diffusion auctions for multiple homogeneous items. Our contribution is a restricted but rigorous mechanism, \emph{SC-GIDM}, for homogeneous items, single-unit-demand buyers, non-colluding identity-splitting attacks, and a root-certified Sybil-cluster oracle. SC-GIDM contracts each certified cluster to its genuine root and runs GIDM on the quotient graph. We prove that any identity-splitting attack induces only a feasible deviation by the cluster root on the quotient graph, which immediately yields individual rationality, diffusion incentive compatibility, weak budget balance, and Sybil-proofness from the corresponding GIDM guarantees. We also show experimentally that identity-level GIDM can be profitably manipulated, while SC-GIDM removes attacker gain and fake winners under the assumed oracle.
+Diffusion auctions sell items through a social network: buyers not only bid, but also decide whether to forward the auction information. The single-item mechanism of Li et al.\ resolves the diffusion problem but is vulnerable to fake identities; the Sybil-proof mechanisms of Chen et al.\ handle false-name manipulation only in the single-item setting; and the multi-item mechanism of Zhao et al.\ does not address Sybil attacks. We study the open direction at the intersection of these works: Sybil-robust diffusion auctions for multiple homogeneous items. Our contribution is a restricted but rigorous mechanism, \emph{SC-GIDM}, for homogeneous items, single-unit-demand buyers, non-colluding identity-splitting attacks, and a root-certified Sybil-cluster oracle. SC-GIDM contracts each certified cluster to its genuine root and runs GIDM on the quotient graph. We prove that any identity-splitting attack induces only a feasible deviation by the cluster root on the quotient graph, which immediately yields individual rationality, diffusion incentive compatibility, weak budget balance, and Sybil-proofness from the corresponding GIDM guarantees. We also give a complete worked example and simulation evidence showing that identity-level GIDM can be profitably manipulated, while SC-GIDM removes attacker gain and fake winners under the assumed oracle.
 \end{abstract}
 
-% \keywords{diffusion auction, social network, Sybil attack, multi-item mechanism, mechanism design}
+\keywords{diffusion auction, social network, Sybil attack, multi-item mechanism, mechanism design}
 
 \begin{document}
 \maketitle
 
 \section{Introduction}
-Classical auction models assume that the seller can directly reach all buyers. In a social-network market this assumption fails: the seller initially informs only a local neighborhood, and the auction reaches deeper buyers only if already informed buyers choose to propagate the information. The first diffusion-auction model of Li et al. formalized this setting for a single item and showed that the information diffusion mechanism (IDM) is individually rational (IR), incentive compatible (IC), and weakly budget balanced, while network-VCG may run a deficit \cite{LiHZZ17}. Zhao et al. later generalized this line to multiple homogeneous items via GIDM, again preserving truthful bidding and diffusion incentives under single-unit demand \cite{ZhaoLXHJ18}. However, Chen et al. showed that ordinary diffusion mechanisms can be manipulated by \emph{Sybil attacks}, where one real buyer creates fake identities to alter the graph positions that determine rewards and prices; they proposed the first Sybil-proof single-item mechanisms, STM and SCM, and explicitly left the multi-item case as future work \cite{ChenDWWZ23}. 
+Classical auctions assume that the seller can directly contact all buyers. In many online and social-network markets this is unrealistic: a seller first reaches only a small local neighborhood, and deeper buyers learn about the sale only if informed agents choose to propagate the information. This creates a new strategic dimension. A buyer can help the seller by diffusing the auction, but may simultaneously prefer not to invite stronger competitors. Typical motivating settings include referral-based social commerce, resale marketplaces, group-buying campaigns, and community-based advertisement or coupon propagation, where the seller sees only a local graph while the eventual high-value buyer may lie several hops away.
 
-This report studies exactly that open direction. Our aim is not to claim a complete solution to arbitrary false-name-proof multi-item mechanism design. Instead, we isolate a setting in which rigorous analysis is possible and the connection to the three baseline papers remains transparent:
-\begin{itemize}[leftmargin=1.5em]
-    \item the seller holds $K\ge 1$ homogeneous items,
-    \item each real buyer has single-unit demand,
-    \item Sybil attacks are \emph{non-colluding split attacks}, and
-    \item a clustering oracle certifies one genuine root for every Sybil cluster.
-\end{itemize}
-Within this model we propose \emph{SC-GIDM} (Sybil-Cluster GIDM): contract each certified cluster to its genuine root and run GIDM on the resulting quotient graph.
+Li et al.\ formalized this setting for one item and proposed the information diffusion mechanism (IDM), which is individually rational (IR), incentive compatible (IC), and weakly budget balanced, while a direct network-VCG adaptation can create seller deficit \cite{LiHZZ17}. Zhao et al.\ extended this framework to multiple homogeneous items via GIDM under single-unit demand \cite{ZhaoLXHJ18}. A second line of work shows that these mechanisms are fragile against \emph{Sybil attacks}: a real buyer creates fake identities to manipulate the graph positions that determine payments and diffusion rewards. Chen et al.\ showed that both VCG-type and IDM-type diffusion auctions are vulnerable, and proposed the single-item Sybil-proof mechanisms STM and SCM \cite{ChenDWWZ23}. Their paper explicitly leaves the multi-item case as future work.
+
+This report studies exactly that open direction. Our objective is deliberately modest but rigorous. We do \emph{not} claim a complete false-name-proof multi-item diffusion mechanism. Instead, we isolate a meaningful setting where a theorem-level extension is possible and faithful to the three baseline papers: the seller has $K\ge 1$ homogeneous items, every real buyer has single-unit demand, attacks are non-colluding identity splits, and a certification layer provides a partition of reported identities into Sybil clusters. In this setting we propose \emph{SC-GIDM} (Sybil-Cluster GIDM): contract each certified cluster to its genuine root and run GIDM on the quotient graph.
+
+\begin{figure*}[t]
+\centering
+\begin{minipage}[t]{0.31\textwidth}
+\centering
+\begin{tikzpicture}[x=0.9cm,y=0.9cm,>=Latex,baseline=(current bounding box.north)]
+\node[seller] (s) at (0,1.2) {$s$};
+\node[agent]  (a) at (1.2,2.0) {$a$};
+\node[agent]  (c) at (1.2,0.4) {$c$};
+\node[agent]  (h) at (2.5,2.0) {$h$};
+\node[agent]  (l) at (2.5,0.4) {$\ell$};
+\draw[->] (s)--(a); \draw[->] (s)--(c);
+\draw[->] (a)--(h); \draw[->] (c)--(l);
+\node[font=\tiny] at (2.5,2.35) {$b_h=13$};
+\node[font=\tiny] at (2.55,0.75) {$b_\ell=12$};
+\end{tikzpicture}
+
+\vspace{1mm}
+\small (a) truthful diffusion
+\end{minipage}\hfill
+\begin{minipage}[t]{0.31\textwidth}
+\centering
+\begin{tikzpicture}[x=0.9cm,y=0.9cm,>=Latex,baseline=(current bounding box.north)]
+\node[seller] (s2) at (0,1.2) {$s$};
+\node[agent]  (a2) at (1.2,2.0) {$a$};
+\node[agent]  (c2) at (1.2,0.4) {$c$};
+\node[sybil]  (cp) at (2.4,0.4) {$c'$};
+\node[agent]  (h2) at (2.5,2.0) {$h$};
+\node[agent]  (l2) at (3.7,0.4) {$\ell$};
+\draw[->] (s2)--(a2); \draw[->] (s2)--(c2);
+\draw[->] (a2)--(h2); \draw[->] (c2)--(cp); \draw[->] (cp)--(l2);
+\end{tikzpicture}
+
+\vspace{1mm}
+\small (b) split attack
+\end{minipage}\hfill
+\begin{minipage}[t]{0.31\textwidth}
+\centering
+\begin{tikzpicture}[x=0.9cm,y=0.9cm,>=Latex,baseline=(current bounding box.north)]
+\node[seller] (s3) at (0,1.2) {$s$};
+\node[agent]  (a3) at (1.2,2.0) {$a$};
+\node[agent]  (r3) at (1.2,0.4) {$r_c$};
+\node[agent]  (h3) at (2.5,2.0) {$h$};
+\node[agent]  (l3) at (2.5,0.4) {$\ell$};
+\draw[->] (s3)--(a3); \draw[->] (s3)--(r3);
+\draw[->] (a3)--(h3); \draw[->] (r3)--(l3);
+\node[clusterbox,fit=(r3)(l3)] {};
+\end{tikzpicture}
+
+\vspace{1mm}
+\small (c) cluster contraction
+\end{minipage}
+\caption{A running intuition. Diffusion rewards depend on graph position, so a fake node $c'$ can alter payments without adding a real buyer. SC-GIDM contracts such identities to a certified root before running GIDM.}
+\label{fig:intuition}
+\end{figure*}
 
 \subsection{Contributions}
 Our report makes four concrete contributions.
@@ -93,12 +153,33 @@ Our report makes four concrete contributions.
 \end{itemize}
 
 \subsection{Related Work}
-Li et al. introduced the basic model of selling one item over a social network, extended VCG to the network setting, and proposed IDM to restore non-deficit while maintaining truthful diffusion \cite{LiHZZ17}. Zhao et al. studied multiple homogeneous items with unit-demand buyers and proposed GIDM, which preserves IR and IC and guarantees seller revenue at least as good as selling only to the seller's immediate neighbors \cite{ZhaoLXHJ18}. Chen et al. modeled false-name manipulation in diffusion auctions, showed that existing mechanisms such as IDM are Sybil-vulnerable, and proposed STM and SCM for the single-item case \cite{ChenDWWZ23}. Our work sits exactly at the missing intersection of the latter two papers: the multi-item analogue of the Sybil-proof diffusion-auction question.
+It is useful to view the literature as three layers. The first layer is the classical efficient-auction backbone created by Vickrey, Clarke, and Groves \cite{Vickrey61,Clarke71,Groves73}. The second layer adapts those ideas to network diffusion. Li et al.\ showed that network-VCG can make truthful diffusion compatible with efficiency, but may pay too much to critical intermediates and therefore run a deficit \cite{LiHZZ17}. Their IDM replaces ``reward all criticality'' by ``reward only price-improving diffusion,'' thereby preserving truthful diffusion while restoring non-deficit. The third layer studies robustness. Zhao et al.\ generalized IDM to $K$ homogeneous items with unit-demand buyers through GIDM \cite{ZhaoLXHJ18}; Chen et al.\ showed that IDM-style criticality rewards are vulnerable to false-name manipulation and proposed STM and SCM for the single-item case \cite{ChenDWWZ23}. Our mechanism sits exactly at the missing intersection of the last two papers.
+
+\begin{table}[t]
+\small
+\centering
+\setlength{\tabcolsep}{3.8pt}
+\caption{Position of our work in the literature.}
+\label{tab:lit}
+\begin{tabular*}{\columnwidth}{@{\extracolsep{\fill}}lccccc@{}}
+\toprule
+Mechanism & Items & IC & IR & WBB & SP \\
+\midrule
+Network-VCG \cite{LiHZZ17} & 1 & \checkmark & \checkmark & $\times$ & $\times$ \\
+IDM \cite{LiHZZ17} & 1 & \checkmark & \checkmark & \checkmark & $\times$ \\
+STM \cite{ChenDWWZ23} & 1 & \checkmark & \checkmark & \checkmark & \checkmark \\
+SCM \cite{ChenDWWZ23} & 1 & \checkmark & \checkmark & \checkmark & \checkmark \\
+GIDM \cite{ZhaoLXHJ18} & $K$ homog. & \checkmark & \checkmark & \checkmark & $\times$ \\
+SC-GIDM (ours) & $K$ homog. & \checkmark$^\dagger$ & \checkmark$^\dagger$ & \checkmark$^\dagger$ & \checkmark$^\dagger$ \\
+\bottomrule
+\multicolumn{6}{@{}p{\columnwidth}@{}}{\footnotesize $^\dagger$Under root-certified clustering, single-unit demand, and non-colluding split attacks.}
+\end{tabular*}
+\end{table}
 
 \section{Model}
 Let $\G=(V,E)$ be a reported social graph with seller $s\in V$ and buyers $N=V\setminus\{s\}$. The seller has $K\ge 1$ identical items. Each real buyer $i$ has single-unit demand and value $v_i\ge 0$ for receiving one item. Buyer $i$ reports a bid $b_i$ and a set $r'_i\subseteq r_i$ of neighbors to whom the information is forwarded; thus an action is a pair $(b_i,r'_i)$, as in the baseline diffusion model \cite{LiHZZ17}. A buyer participates only if the seller can reach that buyer through the induced invitation graph.
 
-The usual desiderata are the following.
+The usual desiderata are as follows.
 \begin{definition}[Diffusion incentive compatibility]
 A mechanism is diffusion IC if truthful bidding and forwarding to all neighbors is a dominant strategy for every buyer.
 \end{definition}
@@ -114,60 +195,126 @@ We now extend the model with Sybil attacks.
 A real buyer $i$ may create a finite set $S_i$ of fake identities. The resulting identity set controlled by $i$ is the cluster $C_i=\{i\}\cup S_i$. Fake identities may connect internally and may be attached only through the creator's true neighborhood; distinct real buyers do not collude.
 \end{definition}
 
-The buyer's utility is evaluated at the \emph{real-buyer} level. Since demand is unit, buyer $i$ values any allocation that gives at least one item to some identity in $C_i$ by exactly $v_i$.
+The buyer's utility is evaluated at the \emph{real-buyer} level. Since demand is unit, buyer $i$ values any allocation that gives at least one item to some identity in $C_i$ by exactly $v_i$:
 \begin{equation}
-\util_i(x,p)=v_i\,\mathbf{1}[\exists t\in C_i:x_t=1]-\sum_{t\in C_i}p_t.
+\util_i(x,p)=v_i\,\ind[\exists t\in C_i:x_t=1]-\sum_{t\in C_i}p_t.
 \label{eq:real-utility}
 \end{equation}
 
-The single crucial extra assumption in our theorem-level result is not about incentives but about the defensive layer.
+The crucial extra assumption concerns only the defensive layer.
 \begin{assumption}[Root-certified Sybil partition]
 The mechanism is given a partition $\Ccal=\{C_1,\dots,C_m\}$ of reported identities and a root map $\rroot(C_j)\in C_j$ such that each root is a genuine buyer. Under any split attack by buyer $i$, all fake identities created by $i$ remain in the same cluster as $i$ and do not alter the clusters of other real buyers.
 \end{assumption}
 
-We stress that the report does \emph{not} solve Sybil detection. The partition is treated as an external certification layer, mirroring the role of trustworthy non-Sybil structure in SCM \cite{ChenDWWZ23}. This restriction is what allows a mathematically clean reduction.
+We stress that the report does \emph{not} solve Sybil detection. The partition is treated as an external certification layer, mirroring the role of trustworthy non-Sybil structure in SCM \cite{ChenDWWZ23}. This restriction is precisely what makes a mathematically clean reduction possible.
 
-\section{SC-GIDM}
-Given a certified partition $\Ccal$, define the quotient graph $\QG$ as follows: each cluster $C\in\Ccal$ becomes one meta-node; there is an edge $(C,D)$ in $\QG$ if and only if the reported identity graph contains at least one edge from some $u\in C$ to some $v\in D$ with $C\neq D$. 
+\section{Mechanism: SC-GIDM}
+Given a certified partition $\Ccal$, define the quotient graph $\QG$ as follows: each cluster $C\in\Ccal$ becomes one meta-node; there is an edge $(C,D)$ in $\QG$ if and only if the reported identity graph contains at least one edge from some $u\in C$ to some $v\in D$ with $C\neq D$. Our mechanism is intentionally simple:
+\begin{enumerate}[leftmargin=1.5em]
+    \item construct the quotient graph $\QG$ from the certified partition;
+    \item represent each cluster $C$ by its certified root $\rroot(C)$ and use the \emph{root bid} $b_{\rroot(C)}$ as the meta-bid of the cluster;
+    \item run GIDM on the quotient graph with $K$ homogeneous items;
+    \item if cluster $C$ wins, allocate the physical item to the root $\rroot(C)$ and charge the GIDM payment to that root.
+\end{enumerate}
 
-Our presentation-level sketch used cluster contraction as the main intuition. For theorem-level guarantees we make one further restriction: the meta-bid of a cluster is the bid of its certified root, not the maximum bid among internal identities. This choice makes the macro instance invariant to internal fake bid inflation.
+Two design choices matter. First, the clustering step removes internal fake graph positions before pricing and allocation. Second, the root-bid rule avoids the obvious flaw of taking the maximum internal bid: under a max-bid rule, an attacker could inject a fake high-valued identity and increase the cluster bid without changing any real value. Thus our mechanism intentionally treats fake internal bids as irrelevant rather than as additional competition.
 
-\begin{definition}[SC-GIDM]
-For each certified cluster $C$, let its meta-bid be $B_C=b_{\rroot(C)}$. Construct the quotient graph $\QG$ from the reported identity graph. Run GIDM on the meta-instance $(\QG,\{B_C\}_{C\in\Ccal},K)$. If a meta-node $C$ wins an item, allocate the physical item to $\rroot(C)$ and charge the entire meta-payment to $\rroot(C)$.
-\end{definition}
+The next proposition explains why some protection is necessary at all.
+\begin{proposition}[Naive identity-level GIDM is not Sybil-proof]
+Running GIDM directly on the reported identity graph is vulnerable to non-colluding split attacks.
+\end{proposition}
+\begin{proof}
+GIDM generalizes IDM from the single-item to the multi-item homogeneous setting \cite{ZhaoLXHJ18}. When $K=1$, GIDM reduces to the single-item case. Chen et al.\ showed that IDM-type diffusion mechanisms are vulnerable to Sybil attacks \cite{ChenDWWZ23}. Therefore identity-level GIDM is not Sybil-proof in general.
+\end{proof}
 
-The mechanism is deliberately austere: internal fake identities disappear before allocation and pricing, and only the genuine root remains strategically relevant.
+\paragraph{A complete worked run.}
+We use the canonical attacked instance from our simulator with $K=3$ items. The seller initially informs $b_1$ and $b_3$; the bids are
+\[
+(b_0,b_1,b_2,b_3,b_4,b_5,b_6,b_7)=(98,34,5,1,19,85,76,61).
+\]
+The truthful edge set contains
+\[
+\begin{aligned}
+&b_0\!:\{b_2,b_4,b_6\},\quad b_1\!:\{b_3,b_7\},\quad b_2\!:\{b_0,b_7\},\quad b_3\!:\{b_1\},\\
+&b_4\!:\{b_0,b_5\},\quad b_5\!:\{b_4\},\quad b_6\!:\{b_0\},\quad b_7\!:\{b_1,b_2\}.
+\end{aligned}
+\]
+Truthful GIDM allocates to $b_1,b_2,b_7$ with payments $p(b_1)=0$, $p(b_2)=1$, and $p(b_7)=0$, so buyer $b_0$ gets utility $0$. Now buyer $b_0$ inserts one fake identity $\sigma$ and rewires its outgoing report as
+\[
+b_0\to \sigma \to \{b_2,b_4,b_6\}.
+\]
+Identity-level GIDM now allocates to $b_1,b_7,\sigma$ and outputs nonzero payments $p(b_2)=-75$ and $p(\sigma)=76$, giving buyer $b_0$ real utility $98-76=22$. Under SC-GIDM the certified cluster is $C_{b_0}=\{b_0,\sigma\}$; contraction reconstructs the original truthful quotient graph, so the outcome returns to the truthful one and the attacker's utility goes back to $0$.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[x=0.83cm,y=0.83cm,>=Latex]
+\node[seller] (s) at (0,1.5) {$s$};
+\node[agent] (b1) at (1.3,2.5) {$b_1$};
+\node[agent] (b3) at (1.3,0.5) {$b_3$};
+\node[agent] (b7) at (2.8,2.7) {$b_7$};
+\node[agent] (b2) at (2.8,1.4) {$b_2$};
+\node[agent] (b0) at (4.3,1.4) {$b_0$};
+\node[sybil] (sy) at (5.8,1.4) {$\sigma$};
+\node[agent] (b4) at (7.2,2.4) {$b_4$};
+\node[agent] (b6) at (7.2,0.4) {$b_6$};
+\draw[->] (s)--(b1); \draw[->] (s)--(b3);
+\draw[->] (b1)--(b3); \draw[->] (b1)--(b7);
+\draw[->] (b2)--(b7); \draw[->] (b2)--(b0);
+\draw[->] (b0)--(sy);
+\draw[->] (sy)--(b2); \draw[->] (sy)--(b4); \draw[->] (sy)--(b6);
+\node[font=\tiny] at (4.3,1.8) {$98$};
+\node[font=\tiny] at (1.3,2.85) {$34$};
+\node[font=\tiny] at (2.8,3.05) {$61$};
+\node[font=\tiny] at (2.8,1.75) {$5$};
+\node[font=\tiny] at (5.8,1.8) {$98$};
+\node[clusterbox,fit=(b0)(sy)] {};
+\end{tikzpicture}
+\caption{Worked example used both in the proof discussion and in the simulator. The attacker $b_0$ inserts one fake identity $\sigma$; SC-GIDM contracts the dotted cluster before running GIDM.}
+\label{fig:worked}
+\end{figure}
+
+\begin{table}[t]
+\small
+\centering
+\setlength{\tabcolsep}{3.3pt}
+\caption{Outcome of the canonical sample run.}
+\label{tab:sample}
+\begin{tabular*}{\columnwidth}{@{\extracolsep{\fill}}lccc@{}}
+\toprule
+Mechanism & Winners & Attacker utility & Fake winner? \\
+\midrule
+Truthful GIDM & $b_1,b_2,b_7$ & $0$ & No \\
+Attacked GIDM & $b_1,b_7,\sigma$ & $22$ & Yes \\
+SC-GIDM & $b_1,b_2,b_7$ & $0$ & No \\
+\bottomrule
+\end{tabular*}
+\end{table}
 
 \section{Main Results}
-We first isolate the key reduction step.
-
-\begin{lemma}[Identity splitting induces only a root deviation]
+The first lemma is the key reduction step.
+\begin{lemma}[Any split attack becomes a root deviation]
 \label{lem:deviation}
-Fix a real buyer $i$ and an arbitrary non-colluding split attack by $i$. After cluster contraction, the attacked identity graph induces a quotient-graph action of cluster $C_i$ that is equivalent to a feasible direct report $(\widehat b_i,\widehat r_i)$ by the certified root $i$, where $\widehat b_i=b'_i$ is the root's own bid and $\widehat r_i\subseteq r_i$.
+Fix a buyer $i$ and any non-colluding split attack by $i$. Under Assumption~1, after cluster contraction the attacked profile induces some feasible direct report $(\widehat b_i,\widehat r_i)$ by the certified root $i$ on the quotient graph.
 \end{lemma}
-
-\begin{proof}
-Because SC-GIDM uses the certified root bid, internal fake bids are ignored, so the meta-bid is exactly the root's bid $b'_i$. By the non-colluding split-attack model, every external edge of a fake identity in $C_i$ is attached only through a true neighbor of $i$; after contraction, the cluster can therefore reach only a subset of $i$'s true neighbors. Thus the entire split attack becomes a feasible direct deviation by the root on the quotient graph.\qedhere
+\begin{proof}[Proof sketch]
+Because SC-GIDM uses the root bid as the cluster bid, internal fake bids disappear after contraction. Moreover, fake identities may attach only through the creator's true neighborhood. Hence every external cluster reached from some fake identity corresponds to a true neighbor that the real buyer could already choose to invite directly. Therefore the attacked cluster induces only a feasible diffusion report by the root together with its chosen root bid.
 \end{proof}
 
-The next theorem is the structural core of the paper.
-\begin{theorem}[Reduction to GIDM]
+\begin{theorem}[Reduction to GIDM on the quotient graph]
 \label{thm:reduction}
-For a fixed certified partition, SC-GIDM is exactly GIDM run on the quotient graph $\QG$.
+For every reported profile satisfying Assumption~1, SC-GIDM produces exactly the same allocation and payment as running GIDM on the quotient graph $\QG$ with the root bids as meta-bids.
 \end{theorem}
-
 \begin{proof}
-SC-GIDM performs no extra allocation or payment operation beyond: (i) contracting clusters, (ii) replacing each cluster by the certified root bid, and (iii) invoking GIDM on the resulting meta-instance. Hence the output of SC-GIDM is, by definition, the output of GIDM on $\QG$, lifted back to the roots of the winning clusters.\qedhere
+By construction, SC-GIDM first replaces each cluster $C$ by its root $\rroot(C)$ and its root bid, then runs GIDM on the resulting meta-instance, and finally lifts the output back to the roots. Therefore the outcome coincides by definition with GIDM on $\QG$.
 \end{proof}
 
-Now we can inherit the known guarantees of GIDM.
-\begin{corollary}[IR, diffusion IC, and weak budget balance]
+The reduction immediately transfers the baseline guarantees.
+\begin{corollary}[Inherited guarantees]
 \label{cor:inherit}
 Under Assumption~1, SC-GIDM is individually rational, diffusion incentive compatible on the quotient graph, and weakly budget balanced.
 \end{corollary}
-
 \begin{proof}
-By Theorem~\ref{thm:reduction}, SC-GIDM is just GIDM on a different graph. Zhao et al. proved that GIDM is IR, IC, and weakly budget balanced for homogeneous items and unit-demand buyers \cite{ZhaoLXHJ18}. Applying those guarantees to the quotient graph yields the claim.\qedhere
+By Theorem~\ref{thm:reduction}, SC-GIDM is exactly GIDM on another graph. Zhao et al.\ proved that GIDM is IR, IC, and weakly budget balanced for homogeneous items and unit-demand buyers \cite{ZhaoLXHJ18}. Applying those guarantees to the quotient graph gives the claim.
 \end{proof}
 
 The main new property is Sybil-proofness.
@@ -175,58 +322,58 @@ The main new property is Sybil-proofness.
 \label{thm:sybil}
 Under Assumption~1, no buyer can increase her real-buyer utility in~\eqref{eq:real-utility} by replacing herself with finitely many fake identities. Equivalently, SC-GIDM is Sybil-proof against non-colluding split attacks.
 \end{theorem}
-
 \begin{proof}
-Fix a buyer $i$ and any split attack. By Lemma~\ref{lem:deviation}, after contraction the attack induces only a feasible deviation by the root $i$ on the quotient graph. By Corollary~\ref{cor:inherit}, truthful bidding and full diffusion are dominant for that root in the quotient-graph GIDM instance. Therefore the root's utility cannot increase under the induced deviation. Since SC-GIDM allocates and charges only at the root level, the real-buyer utility of $i$ in the attacked identity graph is exactly the quotient-graph utility of the root. Hence the split attack cannot improve real-buyer utility.\qedhere
+Fix a buyer $i$ and any split attack. By Lemma~\ref{lem:deviation}, after contraction the attack induces only a feasible direct deviation by the root $i$ on the quotient graph. By Corollary~\ref{cor:inherit}, truthful bidding and full diffusion are dominant for that root in the quotient-graph GIDM instance. Therefore the root's utility cannot increase under the induced deviation. Since SC-GIDM allocates and charges only at the root level, the real-buyer utility of $i$ in the attacked identity graph is exactly the quotient-graph utility of the root. Hence the split attack cannot improve real-buyer utility.
 \end{proof}
 
 \begin{remark}
-The theorem does \emph{not} say that arbitrary cluster-based max-bid heuristics are Sybil-proof. The root-bid choice is what makes internal fake bid inflation strategically irrelevant.
+The theorem does \emph{not} claim that arbitrary cluster-based heuristics are Sybil-proof. The root-bid rule is what blocks internal bid inflation, while the certified partition is what blocks fake identities from creating new meta-nodes.
 \end{remark}
 
 \section{Experimental Framework and Results}
-We implemented four mechanisms in code: local-$K$-Vickrey, truthful GIDM, identity-level GIDM under Sybil attack, and SC-GIDM with a perfect cluster oracle. The code uses the same restricted assumptions as the theory: homogeneous items, single-unit demand, and non-colluding split attacks. Two attack generators were implemented; all reported numbers below use the chain attack with the fake bids equal to the attacker's bid. 
+We implemented four mechanisms in code: local-$K$-Vickrey, truthful GIDM, identity-level GIDM under Sybil attack, and SC-GIDM with a perfect cluster oracle. The simulator uses the same assumptions as the theory: homogeneous items, single-unit demand, and non-colluding split attacks. Two attack generators were implemented: a chain attack that inserts fake intermediaries on a path, and a sibling attack that creates parallel fake descendants. All reported numbers below use the chain attack with the fake bids equal to the attacker's bid.
 
-The canonical family used in the code has $K=3$ items and one attacker $b_0$ with bid $98$. In the truthful instance, GIDM allocates to $b_1,b_2,b_7$ and buyer $b_0$ gets utility $0$. After one inserted Sybil in a chain attack, identity-level GIDM allocates one item to the fake identity and increases the attacker's utility to $22$, whereas SC-GIDM contracts the fake back into the root cluster and returns the truthful outcome. Full details of this run appear in the appendix.
+For random experiments we generated 120 seeds each for rooted trees and Erd\H{o}s--R\'enyi graphs, used $K=3$ items, sampled valuations independently from a fixed bounded range, and measured four quantities: real welfare, seller revenue, average number of fake winners, and attacker gain. Real welfare always ignores fake identities and counts only utilities created by real buyers. This choice matters: an attacked mechanism may appear to improve welfare if it allocates to a high-bid fake identity, even though no additional real value has been created.
 
-We also evaluated the mechanisms on 120 random seeds for two graph models: rooted trees and Erd\H{o}s--R\'enyi graphs. Table~\ref{tab:random} reports the averages at $q=0$ and $q=4$ Sybils. Three patterns are stable.
-\begin{enumerate}[leftmargin=1.5em]
-    \item Attacked GIDM loses \emph{real welfare} as the number of Sybils grows.
-    \item Attacked GIDM starts allocating items to fake identities, while SC-GIDM keeps the average number of fake winners at $0$.
-    \item Seller revenue under attacked GIDM may even increase, which shows that Sybil robustness is not the same as revenue maximization. SC-GIDM instead preserves the no-attack welfare curve under the oracle model.
-\end{enumerate}
+The canonical family described above already shows a strict separation: with one inserted Sybil, identity-level GIDM gives the attacker positive utility $22$, while SC-GIDM keeps the gain at $0$. Table~\ref{tab:random} reports the averages at $q=0$ and $q=4$ Sybils. Three patterns are stable: (i) attacked GIDM loses \emph{real welfare} as the number of Sybils grows; (ii) attacked GIDM starts allocating items to fake identities, while SC-GIDM keeps the average number of fake winners at $0$; and (iii) seller revenue under attacked GIDM may even increase, which shows that Sybil robustness is not the same as revenue maximization. In other words, the attack can move payments in the seller's favor while simultaneously distorting the allocation away from real buyers.
 
 \begin{table}[t]
+\small
 \centering
+\setlength{\tabcolsep}{3.2pt}
 \caption{Average outcomes over 120 seeds. Welfare is measured over real buyers only.}
 \label{tab:random}
-\begin{tabular}{llrrrr}
+\begin{tabular*}{\columnwidth}{@{\extracolsep{\fill}}llrrrr@{}}
 \toprule
 Model & Mechanism & $q$ & Welfare & Revenue & Fake winners \\
 \midrule
-\multirow{4}{*}{Tree} 
+\multirow{4}{*}{Tree}
 & Attacked GIDM & 0 & 345.66 & 289.09 & 0.000 \\
 & SC-GIDM       & 0 & 345.66 & 289.09 & 0.000 \\
 & Attacked GIDM & 4 & 313.93 & 303.89 & 0.408 \\
 & SC-GIDM       & 4 & 345.66 & 289.09 & 0.000 \\
 \midrule
-\multirow{4}{*}{Erd\H{o}s--R\'enyi} 
+\multirow{4}{*}{Erd\H{o}s--R\'enyi}
 & Attacked GIDM & 0 & 351.72 & 305.43 & 0.000 \\
 & SC-GIDM       & 0 & 351.68 & 305.43 & 0.000 \\
 & Attacked GIDM & 4 & 334.06 & 313.05 & 0.217 \\
 & SC-GIDM       & 4 & 351.68 & 305.43 & 0.000 \\
 \bottomrule
-\end{tabular}
+\end{tabular*}
 \end{table}
 
-The canonical attacker-gain experiment is even sharper: for $q=1$ and $q=2$ chain Sybils, identity-level GIDM gives attacker gains of $22$ and $13$, while SC-GIDM keeps the gain at $0$ in every tested case. Thus the quotient-graph reduction is not only a proof device; it also captures the mechanism's practical robustness in the simulator.
+The simulation therefore supports the proof-level message. Contracting to the quotient graph removes fake winners and attacker gain under the oracle model, while leaving the no-attack benchmark essentially unchanged. The price paid for this clean guarantee is explicit in our model: the mechanism depends on a certification layer and is therefore only as good as the cluster partition it receives. This should be read not as a flaw hidden by the theorem, but as the main modeling frontier between single-item Sybil-proof diffusion and the more difficult multi-item setting.
 
 \section{Conclusions}
-The three baseline papers suggest a natural research path: IDM explains truthful diffusion for one item, GIDM extends it to multiple homogeneous items, and STM/SCM show that false identities fundamentally matter. Our report contributes a restricted but rigorous bridge between the latter two directions. Under a root-certified cluster oracle, SC-GIDM contracts each cluster to its genuine root and inherits the IR, diffusion IC, and weak budget balance guarantees of GIDM. The same reduction yields Sybil-proofness against non-colluding split attacks. The experiments support the theorem-level message: identity-level GIDM can be manipulated into fake allocations and lower real welfare, whereas SC-GIDM removes those effects under the assumed oracle. 
+The three baseline papers suggest a natural research path: IDM explains truthful diffusion for one item, GIDM extends it to multiple homogeneous items, and STM/SCM show that false identities fundamentally matter. Our report contributes a restricted but rigorous bridge between the latter two directions. Under a root-certified cluster oracle, SC-GIDM contracts each cluster to its genuine root and inherits the IR, diffusion IC, and weak budget balance guarantees of GIDM. The same reduction yields Sybil-proofness against non-colluding split attacks. The worked example and simulations support the theorem-level message: identity-level GIDM can be manipulated into fake allocations and lower real welfare, whereas SC-GIDM removes those effects under the assumed oracle.
 
 The main limitation is also the clearest future-work direction: the clustering layer is assumed rather than derived. Extending the result beyond root-certified partitions, beyond non-colluding split attacks, or beyond homogeneous unit-demand settings remains open.
 
-% \appendix
+\balance
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{sample}
+
+\appendix
 
 \section{Full Proofs}
 
@@ -242,62 +389,23 @@ Let $\sigma_i$ be any non-colluding split attack by buyer $i$. By Assumption~1, 
 \]
 Because SC-GIDM allocates items and transfers only at the root level, the left-hand side is exactly buyer $i$'s real-buyer utility in the truthful identity graph, and the right-hand side is exactly buyer $i$'s real-buyer utility after executing $\sigma_i$ in the identity graph. Therefore no split attack can improve utility.
 
-\section{A Complete Run on the Canonical Sample}
-The code uses the following truthful instance with $K=3$ items. The seller initially informs $b_1$ and $b_3$; the reported edges are
-\[
-\begin{aligned}
-&b_0\!:\{b_2,b_4,b_6\},\quad b_1\!:\{b_3,b_7\},\quad b_2\!:\{b_0,b_7\},\quad b_3\!:\{b_1\},\\
-&b_4\!:\{b_0,b_5\},\quad b_5\!:\{b_4\},\quad b_6\!:\{b_0\},\quad b_7\!:\{b_1,b_2\},
-\end{aligned}
-\]
-and the bids are
-\[
-(b_0,b_1,b_2,b_3,b_4,b_5,b_6,b_7)=(98,34,5,1,19,85,76,61).
-\]
-
-\paragraph{Truthful GIDM.}
-The implementation outputs the allocation
-\[
-x(b_1)=x(b_2)=x(b_7)=1,
-\]
-all other allocations $0$, and payments
+\section{Additional Details for the Canonical Run}
+In the truthful instance, GIDM allocates to $b_1,b_2,b_7$ with payments
 \[
 p(b_1)=0,\qquad p(b_2)=1,\qquad p(b_7)=0.
 \]
-Hence the attacker's truthful utility is $0$.
-
-\paragraph{One-chain Sybil attack against identity-level GIDM.}
-Buyer $b_0$ creates one fake identity $\mathrm{syb}_{b_0}$ with the same bid $98$, and replaces the outgoing report by the chain
+After the one-chain Sybil attack, identity-level GIDM allocates to $b_1,b_7,\sigma$ and outputs the nonzero payments
 \[
-b_0\to \mathrm{syb}_{b_0}\to \{b_2,b_4,b_6\}.
+p(b_2)=-75,\qquad p(\sigma)=76.
 \]
-Identity-level GIDM now allocates to $b_1$, $b_7$, and $\mathrm{syb}_{b_0}$, and outputs the nonzero payments
-\[
-p(b_1)=0,\qquad p(b_7)=0,\qquad p(b_2)=-75,\qquad p(\mathrm{syb}_{b_0})=76.
-\]
-The real buyer $b_0$ receives one item through the fake identity and pays $76$, so its real-buyer utility becomes
+Thus buyer $b_0$ receives one item through the fake identity and its real utility becomes
 \[
 98-76=22.
 \]
-Thus the split attack is profitable.
-
-\paragraph{SC-GIDM on the attacked instance.}
-The oracle returns the certified cluster partition with one nontrivial cluster
+For SC-GIDM, the oracle returns the partition with one nontrivial cluster
 \[
-C_{b_0}=\{b_0,\mathrm{syb}_{b_0}\},
+C_{b_0}=\{b_0,\sigma\},
 \]
-all other buyers remaining singleton clusters. SC-GIDM replaces this cluster by the certified root $b_0$ with bid $98$. After contraction, the quotient graph is exactly the original truthful graph again. Therefore GIDM on the quotient graph returns the same outcome as the truthful instance:
-\[
-x(b_1)=x(b_2)=x(b_7)=1,
-\]
-with the same payments
-\[
-p(b_1)=0,\qquad p(b_2)=1,\qquad p(b_7)=0.
-\]
-Hence the attacker's utility returns to $0$. This is the concrete sample run used in the simulation code and summarized in the main text.
-
-\balance
-\bibliographystyle{ACM-Reference-Format}
-\bibliography{sample}
+all other buyers remaining singleton clusters. Contraction therefore reconstructs the original truthful quotient graph. GIDM on that quotient graph returns the truthful outcome again, so the attacker's utility drops back to $0$.
 
 \end{document}
