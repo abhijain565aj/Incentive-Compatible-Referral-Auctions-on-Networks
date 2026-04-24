@@ -6,17 +6,16 @@
 \usepackage{booktabs}
 \usepackage{multirow}
 \usepackage{enumitem}
+\usepackage{xurl}
 \usepackage{microtype}
 \usepackage{tikz}
 \usepackage{framed}
 \usetikzlibrary{arrows.meta,positioning,calc,fit,backgrounds}
 
 \setcopyright{ifaamas}
-\acmConference[AAMAS '23]{Proc.\@ of the 22nd International Conference
-on Autonomous Agents and Multiagent Systems (AAMAS 2023)}{May 29 -- June 2, 2023}
-{London, United Kingdom}{A.~Ricci, W.~Yeoh, N.~Agmon, B.~An (eds.)}
-\copyrightyear{2023}
-\acmYear{2023}
+\acmConference{CS6002: Course Project}{Spring 2026}{IIT Bombay, India}
+
+\acmYear{2026}
 \acmDOI{}
 \acmPrice{}
 \acmISBN{}
@@ -39,7 +38,7 @@ on Autonomous Agents and Multiagent Systems (AAMAS 2023)}{May 29 -- June 2, 2023
   \country{India}}
 \email{23b0950@iitb.ac.in}
 
-\author{Ridam Jan}
+\author{Ridam Jain}
 \affiliation{%
   \institution{Indian Institute of Technology Bombay}
   \city{Mumbai}
@@ -102,7 +101,7 @@ This line of work begins with the single-item diffusion model of Li et al., wher
 
 Our project addresses this open direction. Since the final deliverable is not merely a short paper but also a report of the project, we do two things. We first explain the baseline mechanisms---IDM, SCM, and GIDM---and the source of their vulnerability or robustness. We then formalize our proposed extension, \emph{SC-GIDM}, and prove what it guarantees under an explicit attack model. Throughout, we keep a placeholder for the project implementation:
 \begin{center}
-\texttt{[GitHub repository link to be added after final cleanup]}
+\url{https://github.com/abhijain565aj/Incentive-Compatible-Referral-Auctions-on-Networks.git}
 \end{center}
 
 \subsection{Contributions}
@@ -132,7 +131,7 @@ A Sybil attack means that one real buyer creates one or more fake identities and
 \draw[->] (s)--(x); \draw[->] (x)--(y); \draw[->] (x)--(z);
 \node at (1.4,-0.3) {\small truthful graph};
 
-\begin{scope}[xshift=5.3cm]
+\begin{scope}[xshift=4.1cm]
 \node[seller] (s2) at (0,1.2) {$s$};
 \node[agent]  (x2) at (1.2,1.2) {$x$};
 \node[sybil]  (x1) at (2.6,2.0) {$x_1'$};
@@ -162,7 +161,7 @@ GIDM generalizes IDM to $K$ homogeneous items \cite{ZhaoLXHJ18}. It does \emph{n
 The full GIDM pseudocode is fairly long, so we place it in Appendix~\ref{app:gidm}. SC-GIDM uses that GIDM allocation/payment logic on a cluster graph rather than on the original reported identity graph.
 
 \section{GIDM Sybil Vulnerability}
-We now isolate the specific reason why ordinary GIDM is vulnerable. We use the exact running example from our presentation. In the truthful instance, buyer $C$ is an intermediary and receives reward $1$ (equivalently payment $-1$). In the attacked instance, the same buyer creates a fake child $C'$ with bid $18.9$. This Sybil does not add new real value, but it changes the counterfactual welfare benchmark used in GIDM's payment formula. As a result, the attacker's reward increases from $1$ to $2.9$.
+We now isolate the specific reason why ordinary GIDM is vulnerable. In the truthful instance (\ref{fig:gidmattack}), buyer $C$ is an intermediary and receives reward $1$ (equivalently payment $-1$). In the attacked instance (\ref{fig:gidmattack}), the same buyer creates a fake child $C'$ with bid $18.9$. This Sybil does not add new real value, but it changes the counterfactual welfare benchmark used in GIDM's payment formula. As a result, the attacker's reward increases from $1$ to $2.9$.
 
 \begin{figure*}[t]
 \centering
@@ -216,6 +215,7 @@ We now isolate the specific reason why ordinary GIDM is vulnerable. We use the e
   \node[font=\tiny] at (-1.35, 2) {M}; \node[font=\tiny] at (2.1, 2) {Y};
   \node[font=\tiny] at (-1.35, 1) {O}; \node[font=\tiny] at (0.85, 1) {P};
   \node[font=\tiny] at (2.70, 1) {Q};
+
 \end{tikzpicture}
 
 \small (a) Truthful GIDM instance
@@ -280,7 +280,7 @@ We now isolate the specific reason why ordinary GIDM is vulnerable. We use the e
 
 \small (b) Attacked GIDM instance with fake child $C'$
 \end{minipage}
-\caption{The GIDM running example from our presentation. In the attacked instance, the fake node $C'$ changes the GIDM counterfactual benchmark and increases the reward of $C$ from $1$ to $2.9$.}
+\caption{The GIDM running example. In the attacked instance, the fake node $C'$ changes the GIDM counterfactual benchmark and increases the reward of $C$ from $1$ to $2.9$.}
 \label{fig:gidmattack}
 \end{figure*}
 
@@ -320,7 +320,7 @@ Given the reported type profile $\theta'=(G(\theta'),(v'_i)_{i\in N})$ and $K$ h
   \[
   (V_i,V_j)\in E_{\mathrm{cluster}}
   \iff
-  \exists u\in V_i,\ \exists v\in V_j \text{ with } (u,v)\in E(G(\theta')).
+  \exists u\in V_i,\ \exists v\in V_j \text{ with } (u,v)\in E(G(\theta'))
   \]
   For each cluster $V_i$, define a representative
   \[
@@ -350,7 +350,7 @@ Given the reported type profile $\theta'=(G(\theta'),(v'_i)_{i\in N})$ and $K$ h
   SW^{\mathrm{macro}}_{-D_{V_i}}-\Bigl(SW^{\mathrm{macro}}_{-C^K_{V_i}}-\widehat b_{V_i}\Bigr),
   & \text{if } V_i\in W^*(\theta'),\\[1ex]
   SW^{\mathrm{macro}}_{-D_{V_i}}-SW^{\mathrm{macro}}_{-C^K_{V_i}},
-  & \text{if } V_i\in I^*(\theta')\setminus W^*(\theta'),\\[1ex]
+  & \text{if } V_i\in I^*(\theta')\setminus  W^*(\theta')\\[1ex]
   0,
   & \text{otherwise,}
   \end{cases}
@@ -390,7 +390,7 @@ The item and the intermediary reward are separated inside a cluster. If the clus
 \end{remark}
 
 \subsection{Running SC-GIDM on the attacked graph}
-We now revisit the earlier GIDM example through the lens of SC-GIDM. Rather than analyzing only the local neighborhood around $C$, we use the full graph from the presentation so that the clustering and pruning steps can be seen explicitly. The mechanism proceeds in three conceptual stages. First, the reported graph is partitioned into dominator clusters. Second, these clusters define a cluster graph, from which a spanning tree is sampled in the SCM spirit. Third, GIDM is run only on the critical chains of this pruned cluster tree. The figures below are intentionally presented as a running example rather than a proof gadget; their purpose is to show how the attack surface disappears before any payment is computed.
+We now revisit the earlier GIDM example through the lens of SC-GIDM. Rather than analyzing only the local neighborhood around $C$, we use the full graph so that the clustering and pruning steps can be seen explicitly. The mechanism proceeds in three conceptual stages. First, the reported graph is partitioned into dominator clusters. Second, these clusters define a cluster graph, from which a spanning tree is sampled in the SCM spirit. Third, GIDM is run only on the critical chains of this pruned cluster tree. The figures below are intentionally presented as a running example rather than a proof gadget; their purpose is to show how the attack surface disappears before any payment is computed.
 
 \begin{figure*}[t]
 \centering
@@ -628,10 +628,9 @@ Given the buyers' type profile $\theta$ and their action $\theta^\prime\in \math
 
 \section{Appendix: SCM Pseudocode}
 \label{app:scm}
-Our spanning-tree step in SC-GIDM is inspired by SCM \cite{ChenDWWZ23}, which prunes redundant inter-cluster edges before running a truthful single-item mechanism.
-
-\begin{framed}
-\noindent\textbf{Sybil Cluster Mechanism (SCM)}\\
+Our spanning-tree step in SC-GIDM is inspired by SCM \cite{ChenDWWZ23}, which prunes redundant inter-cluster edges before running a truthful single-item mechanism.\\
+% \begin{framed}
+\noindent\textbf{Sybil Cluster Mechanism (SCM) :}\\
 \rule{\linewidth}{0.5pt}
 \begin{enumerate}[leftmargin=1.5em]
 \item Given the reported type profile $\theta'$ as input, reconstruct a social graph
@@ -642,16 +641,13 @@ where
 \[
 E(H)=\{(x,y)\mid \exists i\in K_x,\ \exists j\in K_y \text{ such that } (i,j)\in E(G_s(\theta'))\}.
 \]
-
 \item Sample a random shortest-path tree of $H$ with equal probability, denoted by $T_H$.
-
 \item Construct a subgraph $\widehat G$ of $G_s(\theta')$ using $T_H$ by deleting every edge
 \[
 (i,j)\quad \text{with } i\in K_x,\ j\in K_y,\ x\neq y,\ (x,y)\notin E(T_H).
 \]
-
 \item Run STM on the modified input $(\widehat G,\Gamma(\theta'))$ instead of on the original graph.
 \end{enumerate}
-\end{framed}
+% \end{framed}
 
 \end{document}

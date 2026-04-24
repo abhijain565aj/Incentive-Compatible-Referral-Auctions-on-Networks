@@ -958,10 +958,12 @@ where $D_i=\{i\}\cup C_i(\theta')$.
     % Root
     \node[seller] (S) at (-1, 6) {S};
     \node[smallbuyer] (Z) at (1, 6.0) {1};
+    \node[smallbuyer] (U) at (0, 5.0) {11};
+    \node[smallbuyer] (V) at (0, 4.0) {12};
     
     % Level 1
     \node[smallbuyer] (A) at (-2, 5.0) {7};
-    \node[smallbuyer] (B) at (0, 5.0) {4};
+    \node[smallbuyer] (B) at (-1, 5.0) {4};
     \node[smallbuyer] (C) at (2, 5.0) {2};
     
     % Level 2
@@ -993,6 +995,10 @@ where $D_i=\{i\}\cup C_i(\theta')$.
     \draw (A)--(D); 
     \draw (B)--(D); 
     \draw (Z)--(C);
+    \draw (Z)--(U);
+    \draw (Z)--(V);
+    \draw (B)--(U);
+    \draw (B)--(V);
     
     \draw (C)--(E); \draw (C)--(F); \draw (C)--(G);
     
@@ -1012,7 +1018,9 @@ where $D_i=\{i\}\cup C_i(\theta')$.
     % -------- Letter Labels --------
     % Placed similarly to the \tiny font labels in your snippet
     \node[font=\tiny] at (-2.4, 5.0) {A};
-    \node[font=\tiny] at (-0.4, 5.0) {B};
+    \node[font=\tiny] at (-1.4, 5.0) {B};
+    \node[font=\tiny] at (0.4, 5.0) {U};
+    \node[font=\tiny] at (0.4, 4.0) {V};
     \node[font=\tiny] at (2.4, 5.0) {C};
     \node[font=\tiny] at (1.4, 6.0) {Z};
     
@@ -1105,10 +1113,12 @@ where $D_i=\{i\}\cup C_i(\theta')$.
     % Root
     \node[seller] (S) at (-1, 6) {S};
     \node[smallbuyer] (Z) at (1, 6.0) {1};
+    \node[smallbuyer] (U) at (0, 5.0) {11};
+    \node[smallbuyer] (V) at (0, 4.0) {12};
     
     % Level 1
     \node[smallbuyer] (A) at (-2, 5.0) {7};
-    \node[smallbuyer] (B) at (0, 5.0) {4};
+    \node[smallbuyer] (B) at (-1, 5.0) {4};
     \node[smallbuyer] (C) at (2, 5.0) {2};
     \node[sybil] (C') at (3.5, 5.0) {18.9};
     
@@ -1141,6 +1151,10 @@ where $D_i=\{i\}\cup C_i(\theta')$.
     \draw (A)--(D); 
     \draw (B)--(D); 
     \draw (Z)--(C);
+    \draw (Z)--(U);
+    \draw (Z)--(V);
+    \draw (B)--(U);
+    \draw (B)--(V);
     
     \draw (C)--(E); \draw (C)--(F); \draw (C)--(G);
     \draw (C)--(C'); % Sybil edge
@@ -1160,7 +1174,9 @@ where $D_i=\{i\}\cup C_i(\theta')$.
     % -------- Letter Labels --------
     % Placed similarly to the \tiny font labels in your snippet
     \node[font=\tiny] at (-2.4, 5.0) {A};
-    \node[font=\tiny] at (-0.4, 5.0) {B};
+    \node[font=\tiny] at (-1.4, 5.0) {B};
+    \node[font=\tiny] at (0.4, 5.0) {U};
+    \node[font=\tiny] at (0.4, 4.0) {V};
     \node[font=\tiny] at (2.4, 5.15) {C};
     \node[font=\tiny] at (3.1, 5.15) {C'};
     \node[font=\tiny] at (1.4, 6.0) {Z};
@@ -1358,7 +1374,9 @@ for intermediary clusters. (Sign convention follows GIDM transfer notation.)
     
     % Level 1
     \node[smallbuyer] (A) at (-2, 5.0) {7};
-    \node[smallbuyer] (B) at (0, 5.0) {4};
+    \node[smallbuyer] (B) at (-1, 5.0) {4};
+    \node[smallbuyer] (U) at (0, 5.0) {11};
+    \node[smallbuyer] (V) at (0, 4.0) {12};
     \node[smallbuyer] (C) at (2, 5.0) {2};
     
     % Level 2
@@ -1390,6 +1408,10 @@ for intermediary clusters. (Sign convention follows GIDM transfer notation.)
     \draw[arrow] (A)--(D); 
     \draw[arrow] (B)--(D); 
     \draw[arrow] (Z)--(C);
+    \draw[arrow] (Z)--(U);
+    \draw[arrow] (Z)--(V);
+    \draw[arrow] (B)--(U);
+    \draw[arrow] (B)--(V);
     
     \draw[arrow] (C)--(E); \draw[arrow] (C)--(F); \draw[arrow] (C)--(G);
     
@@ -1409,7 +1431,9 @@ for intermediary clusters. (Sign convention follows GIDM transfer notation.)
     % -------- Letter Labels --------
     % Placed similarly to the \tiny font labels in your snippet
     \node[font=\tiny] at (-2.3, 4.8) {A};
-    \node[font=\tiny] at (0.3, 4.8) {B};
+    \node[font=\tiny] at (-0.7, 4.8) {B};
+    \node[font=\tiny] at (0.3, 4.8) {U};
+    \node[font=\tiny] at (0.3, 3.8) {V};
     \node[font=\tiny] at (2.4, 5.0) {C};
     \node[font=\tiny] at (1.4, 6.0) {Z};
     
@@ -1433,6 +1457,8 @@ for intermediary clusters. (Sign convention follows GIDM transfer notation.)
         \node[cluster, fit=(D) (H) (I) (J) (M) (O)] {};
         \node[cluster, fit=(A)] {};
         \node[cluster, fit=(B)] {};
+        \node[cluster, fit=(U)] {};
+        \node[cluster, fit=(V)] {};
         \node[cluster, fit=(E) (K) (F) (L) (Y) (P) (Q) (C) (G) (Z)] {};
       \end{scope}
   \end{tikzpicture}
@@ -1452,15 +1478,22 @@ for intermediary clusters. (Sign convention follows GIDM transfer notation.)
     \node[smallbuyer] (A) at (-2, 5.0) {7};
     \node[smallbuyer] (B) at (0, 5.0) {4};
     \node[smallbuyer] (H) at (-2, 3) {19};
+    \node[smallbuyer] (U) at (-1, 3) {19};
+    \node[smallbuyer] (V) at (-0, 3) {19};
     \node[smallbuyer] (Y) at (1.75, 2) {20};
 
     \draw[arrow] (S)--(A); 
     \draw[arrow] (S)--(B); 
     \draw[arrow] (S) to[bend left=50] (Y); 
     \draw[arrow] (B)--(H); 
-    \node[font=\tiny] at (0.3, 4.8) {B};
-    \node[font=\tiny] at (-2.30, 2.8) {H};
-    \node[font=\tiny] at (2.1, 2) {Y};
+    \draw[arrow] (B)--(U); 
+    \draw[arrow] (B)--(V); 
+    \node[font=\tiny] at (-1.7, 4.8) {C1};
+    \node[font=\tiny] at (0.3, 4.8) {C2};
+    \node[font=\tiny] at (-2.30, 2.8) {C3};
+    \node[font=\tiny] at (-1.30, 2.8) {C4};
+    \node[font=\tiny] at (-0.30, 2.8) {C5};
+    \node[font=\tiny] at (2.1, 2) {C6};
   \end{tikzpicture}
   \caption{Cluster tree randomly sampled from the cluster graph}
 \end{figure}
@@ -1489,9 +1522,9 @@ for intermediary clusters. (Sign convention follows GIDM transfer notation.)
     \draw[arrow] (S)--(B); 
     \draw[arrow] (S) to[bend left=50] (Y); 
     \draw[arrow] (B)--(H); 
-    \node[font=\tiny] at (0.3, 4.8) {B};
-    \node[font=\tiny] at (-2.30, 2.8) {H};
-    \node[font=\tiny] at (2.1, 2) {Y};
+    \node[font=\tiny] at (0.3, 4.8) {C2};
+    \node[font=\tiny] at (-2.30, 2.8) {C3};
+    \node[font=\tiny] at (2.1, 2) {C6};
   \end{tikzpicture}
   \caption{Cluster tree with only critical chains}
 \end{figure}
