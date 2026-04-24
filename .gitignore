@@ -11,6 +11,11 @@ report/*
 !report/report.tex
 
 finalReport/*
+!finalReport/sample.tex
+!finalReport/aamas.cls
+!finalReport/sample.bib
+!finalReport/ACM-Reference-Format.bst
+!finalReport/aamas2023logo.png
 
 simulator/results/*
 __pycache__/
