@@ -65,12 +65,26 @@ on Autonomous Agents and Multiagent Systems (AAMAS 2023)}{May 29 -- June 2, 2023
 \newcommand{\idom}{\operatorname{idom}}
 \newcommand{\ind}{\mathbf{1}}
 
+
+\newcommand{\tikzbuyer}[4]{\node[buyer] (#1) at (#2) {#3}; \node[below=1mm of #1] {\scriptsize #4};}
+\newcommand{\tikzsmallbuyer}[4]{\node[smallbuyer] (#1) at (#2) {#3}; \node[below=0mm of #1] {\tiny #4};}
+
 \tikzset{
-agent/.style={circle,draw,inner sep=1.6pt,minimum size=5.5mm,font=\scriptsize},
-seller/.style={rectangle,rounded corners,draw,inner sep=2pt,minimum width=6mm,minimum height=5mm,font=\scriptsize,fill=black!7},
-sybil/.style={circle,draw,dashed,inner sep=1.6pt,minimum size=5.5mm,font=\scriptsize,fill=black!4},
-clusterbox/.style={rounded corners,draw,densely dotted,inner sep=2pt}
+  seller/.style={circle, draw=black, fill=blue!18, very thick, minimum size=8mm, inner sep=1pt},
+  buyer/.style={circle, draw=black, fill=gray!10, very thick, minimum size=8mm, inner sep=1pt, font=\small},
+  agent/.style={buyer},
+  winner/.style={circle, draw=green!45!black, fill=green!18, very thick, minimum size=8mm, inner sep=1pt, font=\small},
+  sybil/.style={circle, draw=red!70!black, fill=red!12, very thick, minimum size=7mm, inner sep=1pt, font=\small},
+  cluster/.style={draw=purple!70!black, dashed, very thick, fill=purple!5, inner sep=4pt, rounded corners=4pt},
+  smallbuyer/.style={circle, draw=black, fill=gray!10, thick, minimum size=6mm, inner sep=1pt, font=\scriptsize},
+  arrow/.style={-{Latex[length=2.2mm]}, thick},
+  redarrow/.style={-{Latex[length=2.2mm]}, thick, red!70!black},
+  faintedge/.style={-{Latex[length=2mm]}, thick, gray!55},
+  good/.style={draw=green!50!black, fill=green!7, rounded corners=2mm, inner sep=4pt},
+  bad/.style={draw=red!60!black, fill=red!6, rounded corners=2mm, inner sep=4pt},
+  idea/.style={draw=blue!60!black, fill=blue!5, rounded corners=2mm, inner sep=4pt, align=center}
 }
+
 
 \begin{abstract}
 Diffusion auctions sell items through a social network: buyers not only bid, but also decide whether to forward the auction information. IDM resolves the single-item diffusion problem but is vulnerable to false-name manipulation; SCM restores Sybil-proofness in the single-item setting; and GIDM extends diffusion auctions to multiple homogeneous items without addressing Sybil attacks. This project studies the open direction at the intersection of these works. We propose \emph{SC-GIDM}, a multi-item cluster mechanism inspired by SCM and powered by GIDM on a cluster graph. The report has two goals. First, it explains the baseline mechanisms---IDM, SCM, and GIDM---using examples. Second, it formalizes SC-GIDM and proves two main results under a non-colluding type-preserving split-attack model: (i) SC-GIDM is Sybil-proof, because a buyer's fake identities stay inside the same cluster and cannot change the macro GIDM instance; and (ii) SC-GIDM inherits the relevant macro-level guarantees of GIDM, namely feasibility, individual rationality, incentive compatibility, and weak budget balance. We also justify the cluster-root reward rule as weakly incentive compatible under ex ante role uncertainty.
@@ -108,40 +122,31 @@ The first layer of the literature is the classical efficient-auction foundation 
 \subsection{What is a Sybil attack?}
 A Sybil attack means that one real buyer creates one or more fake identities and controls all of them. In a diffusion auction this is especially dangerous because rewards depend on graph position. If fake identities can become apparently critical, the attacker may earn additional reward without contributing new real demand.
 
-\begin{figure*}[t]
+\begin{figure}[t]
 \centering
-\begin{minipage}[t]{0.47\textwidth}
-\centering
-\begin{tikzpicture}[x=1.0cm,y=1.0cm,>=Latex,baseline=(current bounding box.north)]
+\begin{tikzpicture}[x=0.95cm,y=0.95cm,>=Latex]
 \node[seller] (s) at (0,1.2) {$s$};
-\node[agent]  (x) at (1.6,1.2) {$x$};
-\node[agent]  (y) at (3.2,2.1) {$y$};
-\node[agent]  (z) at (3.2,0.3) {$z$};
+\node[agent]  (x) at (1.4,1.2) {$x$};
+\node[agent]  (y) at (2.8,2.0) {$y$};
+\node[agent]  (z) at (2.8,0.4) {$z$};
 \draw[->] (s)--(x); \draw[->] (x)--(y); \draw[->] (x)--(z);
-\end{tikzpicture}
+\node at (1.4,-0.3) {\small truthful graph};
 
-\vspace{1mm}
-\small truthful graph
-\end{minipage}\hfill
-\begin{minipage}[t]{0.47\textwidth}
-\centering
-\begin{tikzpicture}[x=1.0cm,y=1.0cm,>=Latex,baseline=(current bounding box.north)]
+\begin{scope}[xshift=5.3cm]
 \node[seller] (s2) at (0,1.2) {$s$};
-\node[agent]  (x2) at (1.4,1.2) {$x$};
-\node[sybil]  (x1) at (3.0,2.1) {$x'_1$};
-\node[sybil]  (x2s) at (3.0,0.3) {$x'_2$};
-\node[agent]  (y2) at (4.6,2.1) {$y$};
-\node[agent]  (z2) at (4.6,0.3) {$z$};
+\node[agent]  (x2) at (1.2,1.2) {$x$};
+\node[sybil]  (x1) at (2.6,2.0) {$x_1'$};
+\node[sybil]  (x2s) at (2.6,0.4) {$x_2'$};
+\node[agent]  (y2) at (4.0,2.0) {$y$};
+\node[agent]  (z2) at (4.0,0.4) {$z$};
 \draw[->] (s2)--(x2); \draw[->] (x2)--(x1); \draw[->] (x2)--(x2s);
 \draw[->] (x1)--(y2); \draw[->] (x2s)--(z2);
+\node at (2.0,-0.3) {\small reported graph under split attack};
+\end{scope}
 \end{tikzpicture}
-
-\vspace{1mm}
-\small reported graph under split attack
-\end{minipage}
-\caption{A Sybil attack in a diffusion auction. Fake identities do not add real demand, but they can change the graph positions used in pricing and reward computation. The truthful graph on the left is transformed into a larger reported graph on the right.}
+\caption{A Sybil attack in a diffusion auction. Fake identities can change the graph positions used in pricing and reward computation.}
 \label{fig:sybil}
-\end{figure*}
+\end{figure}
 
 \subsection{IDM: single-item diffusion without deficit}
 In the single-item setting, each informed buyer reports a valuation and chooses which neighbors to inform. The main difficulty is obvious: why would a buyer ever invite future competitors? Li et al.\ answered this through IDM \cite{LiHZZ17}. The mechanism first computes the diffusion critical sequence of the highest bidder and then allocates the item to the first buyer on that sequence who survives the relevant price test. The winner pays the highest bid obtainable without her, and each on-path buyer is rewarded only for the \emph{increase in price} generated by her diffusion. This is what makes IDM non-deficit.
@@ -157,42 +162,125 @@ GIDM generalizes IDM to $K$ homogeneous items \cite{ZhaoLXHJ18}. It does \emph{n
 The full GIDM pseudocode is fairly long, so we place it in Appendix~\ref{app:gidm}. SC-GIDM uses that GIDM allocation/payment logic on a cluster graph rather than on the original reported identity graph.
 
 \section{GIDM Sybil Vulnerability}
-We now isolate the specific reason why ordinary GIDM is vulnerable. Consider the running multi-item graph from our presentation. Before attack, buyer $C$ is an intermediary and receives a reward of $1$, equivalently payment $-1$. Now let $C$ create a fake child $C'$ with bid $18.9$. This does not add a new real buyer, but it changes the welfare benchmark used in the GIDM payment calculation. In the attacked instance, the payment of $C$ becomes $-2.9$, so the attacker's reward rises from $1$ to $2.9$.
+We now isolate the specific reason why ordinary GIDM is vulnerable. We use the exact running example from our presentation. In the truthful instance, buyer $C$ is an intermediary and receives reward $1$ (equivalently payment $-1$). In the attacked instance, the same buyer creates a fake child $C'$ with bid $18.9$. This Sybil does not add new real value, but it changes the counterfactual welfare benchmark used in GIDM's payment formula. As a result, the attacker's reward increases from $1$ to $2.9$.
 
 \begin{figure*}[t]
 \centering
-\begin{minipage}[t]{0.47\textwidth}
+\begin{minipage}[t]{0.48\textwidth}
 \centering
-\begin{tikzpicture}[x=1.0cm,y=1.0cm,>=Latex,baseline=(current bounding box.north)]
-\node[seller] (s) at (0,1.2) {$s$};
-\node[agent]  (a) at (1.6,2.0) {$A$};
-\node[agent]  (b) at (1.6,0.4) {$B$};
-\node[agent]  (c) at (3.2,1.2) {$C$};
-\node[agent]  (h) at (4.8,2.0) {$H$};
-\node[agent]  (y) at (4.8,0.4) {$Y$};
-\draw[->] (s)--(a); \draw[->] (s)--(b); \draw[->] (a)--(c); \draw[->] (b)--(c);
-\draw[->] (c)--(h); \draw[->] (c)--(y);
-\node[font=\tiny] at (3.2,1.55) {$b_C=2$};
-\node[font=\scriptsize] at (3.2,-0.35) {before attack: reward of $C$ is $1$};
+\begin{tikzpicture}[scale=1.00,baseline=(current bounding box.north)]
+    \tikzset{
+      smallbuyer/.append style={minimum size=4.8mm, inner sep=0.5pt, font=\tiny},
+      sybil/.append style={minimum size=4.8mm, inner sep=0.5pt, font=\tiny},
+      seller/.append style={minimum size=6.8mm}
+    }
+  \node[seller] (S) at (-1, 6) {S};
+  \node[smallbuyer] (Z) at (1, 6.0) {1};
+  \node[smallbuyer] (U) at (0, 5.0) {11};
+  \node[smallbuyer] (V) at (0, 4.0) {12};
+  \node[smallbuyer] (A) at (-2, 5.0) {7};
+  \node[smallbuyer] (B) at (-1, 5.0) {4};
+  \node[smallbuyer] (C) at (2, 5.0) {2};
+  \node[smallbuyer] (D) at (-1, 4.0) {14};
+  \node[smallbuyer] (E) at (1, 4.0) {8};
+  \node[smallbuyer] (F) at (2.5, 4.0) {9};
+  \node[smallbuyer] (G) at (4.0, 4.0) {17};
+  \node[smallbuyer] (H) at (-2, 3) {19};
+  \node[smallbuyer] (I) at (-1, 3) {6};
+  \node[smallbuyer] (J) at (0, 3) {5};
+  \node[smallbuyer] (K) at (1.75, 3) {18};
+  \node[smallbuyer] (L) at (3.25, 3) {10};
+  \node[smallbuyer] (M) at (-1, 2) {15};
+  \node[smallbuyer] (Y) at (1.75, 2) {20};
+  \node[smallbuyer] (O) at (-1, 1) {3};
+  \node[smallbuyer] (P) at (1.25, 1) {11};
+  \node[smallbuyer] (Q) at (2.25, 1) {1};
+
+  \draw[arrow] (S)--(A); \draw[arrow] (S)--(B); \draw[arrow] (S)--(Z);
+  \draw[arrow] (A)--(D); \draw[arrow] (B)--(D); \draw[arrow] (Z)--(C);
+  \draw[arrow] (Z)--(U); \draw[arrow] (Z)--(V); \draw[arrow] (B)--(U); \draw[arrow] (B)--(V);
+  \draw[arrow] (C)--(E); \draw[arrow] (C)--(F); \draw[arrow] (C)--(G);
+  \draw[arrow] (D)--(H); \draw[arrow] (D)--(I); \draw[arrow] (D)--(J);
+  \draw[arrow] (H)--(I); \draw[arrow] (J)--(I);
+  \draw[arrow] (E)--(K); \draw[arrow] (F)--(K); \draw[arrow] (F)--(L);
+  \draw[arrow] (I)--(M); \draw[arrow] (K)--(Y);
+  \draw[arrow] (M)--(O); \draw[arrow] (Y)--(P); \draw[arrow] (Y)--(Q); \draw[arrow] (P)--(Q);
+
+  \node[font=\tiny] at (-2.3, 4.8) {A}; \node[font=\tiny] at (-0.7, 4.8) {B};
+  \node[font=\tiny] at (0.3, 4.8) {U}; \node[font=\tiny] at (0.3, 3.8) {V};
+  \node[font=\tiny] at (2.4, 5.0) {C}; \node[font=\tiny] at (1.4, 6.0) {Z};
+  \node[font=\tiny] at (-1.4, 4.0) {D}; \node[font=\tiny] at (1.35, 4.0) {E};
+  \node[font=\tiny] at (2.85, 4.0) {F}; \node[font=\tiny] at (4.25, 3.80) {G};
+  \node[font=\tiny] at (-2.30, 2.8) {H}; \node[font=\tiny] at (-1.35, 2.8) {I};
+  \node[font=\tiny] at (0.25, 2.8) {J}; \node[font=\tiny] at (2.1, 3) {K};
+  \node[font=\tiny] at (-1.35, 2) {M}; \node[font=\tiny] at (2.1, 2) {Y};
+  \node[font=\tiny] at (-1.35, 1) {O}; \node[font=\tiny] at (0.85, 1) {P};
+  \node[font=\tiny] at (2.70, 1) {Q};
 \end{tikzpicture}
+
+\small (a) Truthful GIDM instance
 \end{minipage}\hfill
-\begin{minipage}[t]{0.47\textwidth}
+\begin{minipage}[t]{0.48\textwidth}
 \centering
-\begin{tikzpicture}[x=1.0cm,y=1.0cm,>=Latex,baseline=(current bounding box.north)]
-\node[seller] (s2) at (0,1.2) {$s$};
-\node[agent]  (a2) at (1.6,2.0) {$A$};
-\node[agent]  (b2) at (1.6,0.4) {$B$};
-\node[agent]  (c2) at (3.2,1.2) {$C$};
-\node[sybil]  (cp) at (4.8,1.2) {$C'$};
-\node[agent]  (h2) at (6.4,2.0) {$H$};
-\node[agent]  (y2) at (6.4,0.4) {$Y$};
-\draw[->] (s2)--(a2); \draw[->] (s2)--(b2); \draw[->] (a2)--(c2); \draw[->] (b2)--(c2);
-\draw[->] (c2)--(cp); \draw[->] (cp)--(h2); \draw[->] (cp)--(y2);
-\node[font=\tiny] at (4.8,1.55) {$b_{C'}=18.9$};
-\node[font=\scriptsize] at (3.9,-0.35) {after attack: reward of $C$ becomes $2.9$};
+\begin{tikzpicture}[scale=1.00,baseline=(current bounding box.north)]
+    \tikzset{
+      smallbuyer/.append style={minimum size=4.8mm, inner sep=0.5pt, font=\tiny},
+      winner/.append style={minimum size=4.8mm, inner sep=0.5pt, font=\tiny},
+      sybil/.append style={minimum size=4.8mm, inner sep=0.5pt, font=\tiny},
+      seller/.append style={minimum size=6.8mm}
+    }
+  \node[seller] (S) at (-1, 6) {S};
+  \node[smallbuyer] (Z) at (1, 6.0) {1};
+  \node[smallbuyer] (U) at (0, 5.0) {11};
+  \node[smallbuyer] (V) at (0, 4.0) {12};
+  \node[smallbuyer] (A) at (-2, 5.0) {7};
+  \node[smallbuyer] (B) at (-1, 5.0) {4};
+  \node[smallbuyer] (C) at (2, 5.0) {2};
+  \node[sybil] (Cp) at (3.5, 5.0) {18.9};
+  \node[smallbuyer] (D) at (-1, 4.0) {14};
+  \node[smallbuyer] (E) at (1, 4.0) {8};
+  \node[smallbuyer] (F) at (2.5, 4.0) {9};
+  \node[winner] (G) at (4.0, 4.0) {17};
+  \node[winner] (H) at (-2, 3) {19};
+  \node[smallbuyer] (I) at (-1, 3) {6};
+  \node[smallbuyer] (J) at (0, 3) {5};
+  \node[winner] (K) at (1.75, 3) {18};
+  \node[smallbuyer] (L) at (3.25, 3) {10};
+  \node[winner] (M) at (-1, 2) {15};
+  \node[winner] (Y) at (1.75, 2) {20};
+  \node[smallbuyer] (O) at (-1, 1) {3};
+  \node[smallbuyer] (P) at (1.25, 1) {11};
+  \node[smallbuyer] (Q) at (2.25, 1) {1};
+
+  \draw[arrow] (S)--(A); \draw[arrow] (S)--(B); \draw[arrow] (S)--(Z);
+  \draw[arrow] (A)--(D); \draw[arrow] (B)--(D); \draw[arrow] (Z)--(C);
+  \draw[arrow] (Z)--(U); \draw[arrow] (Z)--(V); \draw[arrow] (B)--(U); \draw[arrow] (B)--(V);
+  \draw[arrow] (C)--(E); \draw[arrow] (C)--(F); \draw[arrow] (C)--(G);
+  \draw[arrow] (C)--(Cp);
+  \draw[arrow] (D)--(H); \draw[arrow] (D)--(I); \draw[arrow] (D)--(J);
+  \draw[arrow] (H)--(I); \draw[arrow] (I)--(J);
+  \draw[arrow] (E)--(K); \draw[arrow] (F)--(K); \draw[arrow] (F)--(L);
+  \draw[arrow] (I)--(M); \draw[arrow] (K)--(Y);
+  \draw[arrow] (M)--(O); \draw[arrow] (Y)--(P); \draw[arrow] (Y)--(Q); \draw[arrow] (P)--(Q);
+
+  \node[font=\tiny] at (-2.4, 5.0) {A}; \node[font=\tiny] at (-1.4, 5.0) {B};
+  \node[font=\tiny] at (0.4, 5.0) {U}; \node[font=\tiny] at (0.4, 4.0) {V};
+  \node[font=\tiny] at (2.4, 5.15) {C}; \node[font=\tiny] at (3.1, 5.15) {C'};
+  \node[font=\tiny] at (1.4, 6.0) {Z}; \node[font=\tiny] at (-1.5, 4.0) {D};
+  \node[font=\tiny] at (1.35, 4.0) {E}; \node[font=\tiny] at (2.85, 4.0) {F};
+  \node[font=\tiny] at (4.35, 4.0) {G}; \node[font=\tiny] at (-2.40, 3) {H};
+  \node[font=\tiny] at (-1.35, 2.8) {I}; \node[font=\tiny] at (0.45, 3) {J};
+  \node[font=\tiny] at (2.1, 3) {K}; \node[font=\tiny] at (-1.35, 2) {M};
+  \node[font=\tiny] at (2.1, 2) {Y}; \node[font=\tiny] at (-1.35, 1) {O};
+  \node[font=\tiny] at (0.85, 1) {P}; \node[font=\tiny] at (2.70, 1) {Q};
+  \begin{scope}[on background layer]
+    \node[cluster, fit=(C) (Cp)] {};
+  \end{scope}
 \end{tikzpicture}
+
+\small (b) Attacked GIDM instance with fake child $C'$
 \end{minipage}
-\caption{A local GIDM Sybil attack from the presentation example. The fake identity $C'$ does not create new real value, but it changes the payment benchmark and increases the attacker's reward from $1$ to $2.9$.}
+\caption{The GIDM running example from our presentation. In the attacked instance, the fake node $C'$ changes the GIDM counterfactual benchmark and increases the reward of $C$ from $1$ to $2.9$.}
 \label{fig:gidmattack}
 \end{figure*}
 
@@ -302,81 +390,131 @@ The item and the intermediary reward are separated inside a cluster. If the clus
 \end{remark}
 
 \subsection{Running SC-GIDM on the attacked graph}
-We now revisit the same local pattern, but this time we apply SC-GIDM step by step. To stay consistent with the theorem model, we use a \emph{type-preserving} split attack: the fake identity $C'$ carries the same underlying value as $C$. Take bids
-\[
-b_A=7,\qquad b_B=4,\qquad b_C=b_{C'}=2,\qquad b_H=19,\qquad b_Y=20,
-\]
-and let $K=2$. The three panels of Figure~\ref{fig:scgsteps} show the full run.
-
-In panel (a), the reported identity graph contains the split attack. In panel (b), SC-GIDM computes dominator clusters and contracts $C$ and $C'$ into the single cluster $V_C$. This removes the extra internal position created by the Sybil. In panel (c), we sample a spanning tree of the cluster graph, run macro-level GIDM, and then lift the outcome back to identities. The two highest-value descendant clusters win the two items, while the intermediary reward of the critical cluster $V_C$ is paid only once, to its root $\rho(V_C)=C$. Thus the attack does not create an additional reward-bearing macro position.
+We now revisit the earlier GIDM example through the lens of SC-GIDM. Rather than analyzing only the local neighborhood around $C$, we use the full graph from the presentation so that the clustering and pruning steps can be seen explicitly. The mechanism proceeds in three conceptual stages. First, the reported graph is partitioned into dominator clusters. Second, these clusters define a cluster graph, from which a spanning tree is sampled in the SCM spirit. Third, GIDM is run only on the critical chains of this pruned cluster tree. The figures below are intentionally presented as a running example rather than a proof gadget; their purpose is to show how the attack surface disappears before any payment is computed.
 
 \begin{figure*}[t]
 \centering
-\begin{minipage}[t]{0.31\textwidth}
+\begin{minipage}[t]{0.54\textwidth}
 \centering
-\begin{tikzpicture}[x=0.95cm,y=0.95cm,>=Latex,baseline=(current bounding box.north)]
-\node[seller] (s) at (0,1.2) {$s$};
-\node[agent]  (a) at (1.3,2.0) {$A$};
-\node[agent]  (b) at (1.3,0.4) {$B$};
-\node[agent]  (c) at (2.8,1.2) {$C$};
-\node[sybil]  (cp) at (4.3,1.2) {$C'$};
-\node[agent]  (h) at (5.8,2.0) {$H$};
-\node[agent]  (y) at (5.8,0.4) {$Y$};
-\draw[->] (s)--(a); \draw[->] (s)--(b); \draw[->] (a)--(c); \draw[->] (b)--(c);
-\draw[->] (c)--(cp); \draw[->] (cp)--(h); \draw[->] (cp)--(y);
-\node[font=\tiny] at (1.3,2.35) {$7$};
-\node[font=\tiny] at (1.3,0.75) {$4$};
-\node[font=\tiny] at (2.8,1.55) {$2$};
-\node[font=\tiny] at (4.3,1.55) {$2$};
-\node[font=\tiny] at (5.8,2.35) {$19$};
-\node[font=\tiny] at (5.8,0.75) {$20$};
+\begin{tikzpicture}[scale=0.82,baseline=(current bounding box.north)]
+    \node[seller] (S) at (-1, 6) {S};
+    \node[smallbuyer] (Z) at (1, 6.0) {1};
+    \node[smallbuyer] (A) at (-2, 5.0) {7};
+    \node[smallbuyer] (B) at (-1, 5.0) {4};
+    \node[smallbuyer] (U) at (0, 5.0) {11};
+    \node[smallbuyer] (V) at (0, 4.0) {12};
+    \node[smallbuyer] (C) at (2, 5.0) {2};
+    \node[smallbuyer] (D) at (-1, 4.0) {14};
+    \node[smallbuyer] (E) at (1, 4.0) {8};
+    \node[smallbuyer] (F) at (2.5, 4.0) {9};
+    \node[smallbuyer] (G) at (4.0, 4.0) {17};
+    \node[smallbuyer] (H) at (-2, 3) {19};
+    \node[smallbuyer] (I) at (-1, 3) {6};
+    \node[smallbuyer] (J) at (0, 3) {5};
+    \node[smallbuyer] (K) at (1.75, 3) {18};
+    \node[smallbuyer] (L) at (3.25, 3) {10};
+    \node[smallbuyer] (M) at (-1, 2) {15};
+    \node[smallbuyer] (Y) at (1.75, 2) {20};
+    \node[smallbuyer] (O) at (-1, 1) {3};
+    \node[smallbuyer] (P) at (1.25, 1) {11};
+    \node[smallbuyer] (Q) at (2.25, 1) {1};
+
+    \draw[arrow] (S)--(A); \draw[arrow] (S)--(B); \draw[arrow] (S)--(Z);
+    \draw[arrow] (A)--(D); \draw[arrow] (B)--(D);
+    \draw[arrow] (Z)--(C); \draw[arrow] (Z)--(U); \draw[arrow] (Z)--(V);
+    \draw[arrow] (B)--(U); \draw[arrow] (B)--(V);
+    \draw[arrow] (C)--(E); \draw[arrow] (C)--(F); \draw[arrow] (C)--(G);
+    \draw[arrow] (D)--(H); \draw[arrow] (D)--(I); \draw[arrow] (D)--(J);
+    \draw[arrow] (H)--(I); \draw[arrow] (J)--(I);
+    \draw[arrow] (E)--(K); \draw[arrow] (F)--(K); \draw[arrow] (F)--(L);
+    \draw[arrow] (I)--(M); \draw[arrow] (K)--(Y);
+    \draw[arrow] (M)--(O); \draw[arrow] (Y)--(P); \draw[arrow] (Y)--(Q); \draw[arrow] (P)--(Q);
+
+    \node[font=\tiny] at (-2.3, 4.8) {A}; \node[font=\tiny] at (-0.7, 4.8) {B};
+    \node[font=\tiny] at (0.3, 4.8) {U}; \node[font=\tiny] at (0.3, 3.8) {V};
+    \node[font=\tiny] at (2.4, 5.0) {C}; \node[font=\tiny] at (1.4, 6.0) {Z};
+    \node[font=\tiny] at (-1.4, 4.0) {D}; \node[font=\tiny] at (1.35, 4.0) {E};
+    \node[font=\tiny] at (2.85, 4.0) {F}; \node[font=\tiny] at (4.25, 3.80) {G};
+    \node[font=\tiny] at (-2.30, 2.8) {H}; \node[font=\tiny] at (-1.35, 2.8) {I};
+    \node[font=\tiny] at (0.25, 2.8) {J}; \node[font=\tiny] at (2.1, 3) {K};
+    \node[font=\tiny] at (-1.35, 2) {M}; \node[font=\tiny] at (2.1, 2) {Y};
+    \node[font=\tiny] at (-1.35, 1) {O}; \node[font=\tiny] at (0.85, 1) {P};
+    \node[font=\tiny] at (2.70, 1) {Q};
+    \begin{scope}[on background layer]
+        \node[cluster, fit=(D) (H) (I) (J) (M) (O)] {};
+        \node[cluster, fit=(A)] {};
+        \node[cluster, fit=(B)] {};
+        \node[cluster, fit=(U)] {};
+        \node[cluster, fit=(V)] {};
+        \node[cluster, fit=(E) (K) (F) (L) (Y) (P) (Q) (C) (G) (Z)] {};
+    \end{scope}
 \end{tikzpicture}
 
-\vspace{1mm}
-\small (a) attacked identity graph
+\small Step 1: dominator clusters in the reported graph
 \end{minipage}\hfill
-\begin{minipage}[t]{0.31\textwidth}
+\begin{minipage}[t]{0.42\textwidth}
 \centering
-\begin{tikzpicture}[x=0.95cm,y=0.95cm,>=Latex,baseline=(current bounding box.north)]
-\node[seller] (s) at (0,1.2) {$s$};
-\node[agent]  (a) at (1.3,2.0) {$A$};
-\node[agent]  (b) at (1.3,0.4) {$B$};
-\node[agent]  (vc) at (3.2,1.2) {$V_C$};
-\node[agent]  (h) at (5.1,2.0) {$H$};
-\node[agent]  (y) at (5.1,0.4) {$Y$};
-\draw[->] (s)--(a); \draw[->] (s)--(b); \draw[->] (a)--(vc); \draw[->] (b)--(vc);
-\draw[->] (vc)--(h); \draw[->] (vc)--(y);
-\node[clusterbox,fit=(vc)] {};
-\node[font=\tiny] at (3.2,1.55) {$\widehat b_{V_C}=2$};
+\begin{tikzpicture}[scale=0.85,baseline=(current bounding box.north)]
+    \node[seller] (S) at (-1, 6) {S};
+    \node[smallbuyer] (A) at (-2, 5.0) {7};
+    \node[smallbuyer] (B) at (0, 5.0) {4};
+    \node[smallbuyer] (H) at (-2, 3) {19};
+    \node[smallbuyer] (U) at (-1, 3) {19};
+    \node[smallbuyer] (V) at (0, 3) {19};
+    \node[smallbuyer] (Y) at (1.75, 2) {20};
+
+    \draw[arrow] (S)--(A);
+    \draw[arrow] (S)--(B);
+    \draw[arrow] (S) to[bend left=50] (Y);
+    \draw[arrow] (B)--(H);
+    \draw[arrow] (B)--(U);
+    \draw[arrow] (B)--(V);
+    \node[font=\tiny] at (-1.7, 4.8) {C1};
+    \node[font=\tiny] at (0.3, 4.8) {C2};
+    \node[font=\tiny] at (-2.30, 2.8) {C3};
+    \node[font=\tiny] at (-1.30, 2.8) {C4};
+    \node[font=\tiny] at (-0.30, 2.8) {C5};
+    \node[font=\tiny] at (2.1, 2) {C6};
 \end{tikzpicture}
 
-\vspace{1mm}
-\small (b) cluster graph after contraction
-\end{minipage}\hfill
-\begin{minipage}[t]{0.31\textwidth}
-\centering
-\begin{tikzpicture}[x=0.95cm,y=0.95cm,>=Latex,baseline=(current bounding box.north)]
-\node[seller] (s) at (0,1.2) {$s$};
-\node[agent]  (a) at (1.3,2.0) {$A$};
-\node[agent]  (b) at (1.3,0.4) {$B$};
-\node[agent]  (vc) at (3.2,1.2) {$V_C$};
-\node[agent]  (h) at (5.1,2.0) {$H$};
-\node[agent]  (y) at (5.1,0.4) {$Y$};
-\draw[->] (s)--(a); \draw[->] (s)--(b); \draw[->] (a)--(vc);
-\draw[->] (vc)--(h); \draw[->] (vc)--(y);
-\node[font=\tiny] at (5.1,2.35) {winner};
-\node[font=\tiny] at (5.1,0.75) {winner};
-\node[font=\tiny] at (3.2,1.55) {reward to $\rho(V_C)=C$};
-\end{tikzpicture}
-
-\vspace{1mm}
-\small (c) sampled tree and lifted outcome
+\small Step 2: cluster tree sampled from the cluster graph
 \end{minipage}
-\caption{A running SC-GIDM example. Panel (a) is the attacked identity graph. Panel (b) contracts the fake identity into the same dominator cluster as its creator. Panel (c) shows the sampled cluster tree on which macro-level GIDM is run: $H$ and $Y$ win the two items, while the intermediary reward of $V_C$ is paid once to the root $C$.}
-\label{fig:scgsteps}
+\caption{Executing SC-GIDM on the running example: first form dominator clusters, then sample a cluster tree in the SCM spirit. The dotted regions on the left show the macro units that replace entire dominated subgraphs.}
+\label{fig:scgidmstepsone}
 \end{figure*}
 
-This example captures the central robustness idea of the mechanism. Ordinary GIDM is vulnerable because the fake identity is treated as a fresh graph position. SC-GIDM instead removes that extra position before pricing and reward computation. The cluster $V_C$ can still be critical, but it can only be critical \emph{once}. Therefore the attack cannot multiply the number of intermediary rewards by splitting one real node into many internal identities.
+\begin{figure*}[t]
+\centering
+\begin{minipage}[t]{0.42\textwidth}
+\centering
+\begin{tikzpicture}[scale=0.9,baseline=(current bounding box.north)]
+    \node[seller] (S) at (-1, 6) {S};
+    \node[smallbuyer] (B) at (0, 5.0) {4};
+    \node[smallbuyer] (H) at (-2, 3) {19};
+    \node[smallbuyer] (Y) at (1.75, 2) {20};
+
+    \draw[arrow] (S)--(B);
+    \draw[arrow] (S) to[bend left=50] (Y);
+    \draw[arrow] (B)--(H);
+    \node[font=\tiny] at (0.3, 4.8) {C2};
+    \node[font=\tiny] at (-2.30, 2.8) {C3};
+    \node[font=\tiny] at (2.1, 2) {C6};
+\end{tikzpicture}
+
+\small Step 3: only the critical chains remain relevant for macro GIDM
+\end{minipage}\hfill
+\begin{minipage}[t]{0.54\textwidth}
+\small
+\textbf{Placeholder explanation of the run.} In the sampled tree, the seller's items are routed only through the surviving macro-critical chains. Here one winning chain terminates at cluster $C_3$ (containing the high-valued subtree rooted at $D$) and the other at $C_6$ (containing the high-valued subtree rooted at $C/F/K/Y$). Cluster $C_2$ becomes the unique intermediary on one critical path, so any intermediary reward is attached to $C_2$ as a cluster-level role rather than to individual fake identities hidden inside it.
+
+\medskip
+When this macro outcome is lifted back to the identity graph, the physical items are given to the highest-bid representatives of the winning clusters, while any intermediary reward remains attached to the designated root of the intermediary cluster. This is exactly the structural reason the split attack loses its effect under SC-GIDM: adding more internal fake nodes does not create additional macro positions, additional macro winners, or additional reward-bearing intermediaries.
+\end{minipage}
+\caption{Final macro-level view of the running example. The SC-GIDM computation only depends on the pruned cluster tree and the aggregate cluster bids, so internal fake nodes no longer change reward-bearing graph structure.}
+\label{fig:scgidmstepstwo}
+\end{figure*}
+
+The key point is that after clustering and tree sampling, the mechanism reasons only about the macro nodes $C_1,\dots,C_6$. Internal fake descendants disappear into their containing cluster before any GIDM payment term is evaluated. Thus the internal split changes neither the macro topology nor the set of reward-bearing macro positions. The macro transfer attached to an intermediary cluster is determined only by the cluster tree and the cluster bids, not by the number of internal fake nodes.
 
 \section{Main Results}
 We first show that a buyer's split identities remain confined inside a single cluster.
