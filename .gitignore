@@ -5,12 +5,11 @@ presentation/*
 !presentation/poly.sty
 !presentation/xgames.sty
 
-finalReport/*
-!finalReport/sample.tex
-!finalReport/aamas.cls
-!finalReport/sample.bib
-!finalReport/ACM-Reference-Format.bst
-!finalReport/aamas2023logo.png
+report/*
+!report/report.tex
+!report/aamas.cls
+!report/sample.bib
+!report/ACM-Reference-Format.bst
 
 simulator/results/*
 __pycache__/

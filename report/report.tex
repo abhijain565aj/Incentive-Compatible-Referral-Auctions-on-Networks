@@ -99,10 +99,7 @@ Classical auctions assume that the seller can directly contact all buyers. In ma
 
 This line of work begins with the single-item diffusion model of Li et al., where buyers report both valuations and diffusion choices \cite{LiHZZ17}. Their information diffusion mechanism (IDM) is individually rational (IR), incentive compatible (IC), and weakly budget balanced, while a direct network-VCG extension can pay excessive rewards and may create seller deficit. Zhao et al.\ later extended the framework to multiple homogeneous items via the generalized information diffusion mechanism (GIDM), again preserving truthfulness and budget balance under unit-demand buyers \cite{ZhaoLXHJ18}. However, Chen et al.\ showed that ordinary diffusion mechanisms are fragile to \emph{Sybil attacks}: a real buyer can create fake identities to manipulate the graph positions that determine rewards and payments. They proposed STM and SCM as single-item Sybil-proof mechanisms and explicitly left the multi-item case open \cite{ChenDWWZ23}.
 
-Our project addresses this open direction. Since the final deliverable is not merely a short paper but also a report of the project, we do two things. We first explain the baseline mechanisms---IDM, SCM, and GIDM---and the source of their vulnerability or robustness. We then formalize our proposed extension, \emph{SC-GIDM}, and prove what it guarantees under an explicit attack model. Throughout, we keep a placeholder for the project implementation:
-\begin{center}
-\url{https://github.com/abhijain565aj/Incentive-Compatible-Referral-Auctions-on-Networks.git}
-\end{center}
+Our project addresses this open direction. Since the final deliverable is not merely a short paper but also a report of the project, we do two things. We first explain the baseline mechanisms---IDM, SCM, and GIDM---and the source of their vulnerability or robustness. We then formalize our proposed extension, \emph{SC-GIDM}, and prove what it guarantees under an explicit attack model. Here's the repository link for the project simulator code and exploratory experiments: \textbf{\url{https://github.com/abhijain565aj/Incentive-Compatible-Referral-Auctions-on-Networks.git}}
 
 Alongside the theoretical part of the project, we also developed an exploratory implementation and simulator in our project repository. As we are not yet fully confident that this code faithfully reproduces the exact paper-level multi-item GIDM mechanism, we do not rely on these experiments in the main text; instead, we summarize the implementation effort, exploratory observations, and limitations in Appendix~\ref{app:simulation}.
 
@@ -214,6 +211,7 @@ We now isolate the specific reason why ordinary GIDM is vulnerable. In the truth
   \node[font=\tiny] at (2.85, 4.0) {F}; \node[font=\tiny] at (4.25, 3.80) {G};
   \node[font=\tiny] at (-2.30, 2.8) {H}; \node[font=\tiny] at (-1.35, 2.8) {I};
   \node[font=\tiny] at (0.25, 2.8) {J}; \node[font=\tiny] at (2.1, 3) {K};
+  \node[font=\tiny] at (3.6, 3) {L};
   \node[font=\tiny] at (-1.35, 2) {M}; \node[font=\tiny] at (2.1, 2) {Y};
   \node[font=\tiny] at (-1.35, 1) {O}; \node[font=\tiny] at (0.85, 1) {P};
   \node[font=\tiny] at (2.70, 1) {Q};
@@ -272,7 +270,9 @@ We now isolate the specific reason why ordinary GIDM is vulnerable. In the truth
   \node[font=\tiny] at (1.35, 4.0) {E}; \node[font=\tiny] at (2.85, 4.0) {F};
   \node[font=\tiny] at (4.35, 4.0) {G}; \node[font=\tiny] at (-2.40, 3) {H};
   \node[font=\tiny] at (-1.35, 2.8) {I}; \node[font=\tiny] at (0.45, 3) {J};
-  \node[font=\tiny] at (2.1, 3) {K}; \node[font=\tiny] at (-1.35, 2) {M};
+  \node[font=\tiny] at (2.1, 3) {K}; 
+  \node[font=\tiny] at (3.6, 3) {L};
+  \node[font=\tiny] at (-1.35, 2) {M};
   \node[font=\tiny] at (2.1, 2) {Y}; \node[font=\tiny] at (-1.35, 1) {O};
   \node[font=\tiny] at (0.85, 1) {P}; \node[font=\tiny] at (2.70, 1) {Q};
   \begin{scope}[on background layer]
@@ -403,7 +403,11 @@ Finally, we lift the cluster-level outcome to original nodes.
 \centering
 \begin{minipage}[t]{0.54\textwidth}
 \centering
-\begin{tikzpicture}[scale=0.82,baseline=(current bounding box.north)]
+\begin{tikzpicture}[scale=0.9,baseline=(current bounding box.north)]
+    \tikzset{
+      smallbuyer/.append style={minimum size=4.5mm, inner sep=0.4pt, font=\tiny},
+      seller/.append style={minimum size=6mm, inner sep=0.6pt}
+    }
     \node[seller] (S) at (-1, 6) {S};
     \node[smallbuyer] (Z) at (1, 6.0) {1};
     \node[smallbuyer] (A) at (-2, 5.0) {7};
@@ -437,15 +441,16 @@ Finally, we lift the cluster-level outcome to original nodes.
     \draw[arrow] (I)--(M); \draw[arrow] (K)--(Y);
     \draw[arrow] (M)--(O); \draw[arrow] (Y)--(P); \draw[arrow] (Y)--(Q); \draw[arrow] (P)--(Q);
 
-    \node[font=\tiny] at (-2.3, 4.6) {A}; \node[font=\tiny] at (-0.9, 4.8) {B};
-    \node[font=\tiny] at (-0, 4.8) {U}; \node[font=\tiny] at (0.3, 3.6) {V};
+    \node[font=\tiny] at (-2.3, 4.7) {A}; \node[font=\tiny] at (-1.3, 4.7) {B};
+    \node[font=\tiny] at (-0.3, 4.7) {U}; \node[font=\tiny] at (0.3, 3.7) {V};
     \node[font=\tiny] at (2.5, 5.0) {C}; \node[font=\tiny] at (1.5, 6.0) {Z};
     \node[font=\tiny] at (-1.5, 4.0) {D}; \node[font=\tiny] at (1.45, 4.0) {E};
     \node[font=\tiny] at (2.95, 4.0) {F}; \node[font=\tiny] at (4.25, 3.60) {G};
-    \node[font=\tiny] at (-2.30, 2.6) {H}; \node[font=\tiny] at (-1.35, 2.6) {I};
-    \node[font=\tiny] at (0.25, 2.6) {J}; \node[font=\tiny] at (2.2, 3) {K};
-    \node[font=\tiny] at (-1.5, 2) {M}; \node[font=\tiny] at (2.2, 2) {Y};
-    \node[font=\tiny] at (-1.5, 1) {O}; \node[font=\tiny] at (0.75, 1) {P};
+    \node[font=\tiny] at (-2.30, 2.7) {H}; \node[font=\tiny] at (-1.35, 2.7) {I};
+    \node[font=\tiny] at (0.25, 2.7) {J}; \node[font=\tiny] at (2.2, 3) {K};
+    \node[font=\tiny] at (3.6, 3) {L};
+    \node[font=\tiny] at (-1.4, 2) {M}; \node[font=\tiny] at (2.2, 2) {Y};
+    \node[font=\tiny] at (-1.4, 1) {O}; \node[font=\tiny] at (0.85, 1) {P};
     \node[font=\tiny] at (2.70, 1) {Q};
     \begin{scope}[on background layer]
         \node[cluster, fit=(D) (H) (I) (J) (M) (O)] {};
@@ -503,9 +508,9 @@ Finally, we lift the cluster-level outcome to original nodes.
     \draw[arrow] (S)--(B);
     \draw[arrow] (S) to[bend left=50] (Y);
     \draw[arrow] (B)--(H);
-    \node[font=\tiny] at (0.3, 4.8) {C2};
-    \node[font=\tiny] at (-2.30, 2.8) {C3};
-    \node[font=\tiny] at (2.1, 2) {C6};
+    \node[font=\tiny] at (0.45, 4.85) {C2};
+    \node[font=\tiny] at (-2.45, 2.8) {C3};
+    \node[font=\tiny] at (2.25, 2.05) {C6};
 \end{tikzpicture}
 
 \small Step 3: only the critical chains remain relevant for macro GIDM
@@ -516,7 +521,7 @@ Finally, we lift the cluster-level outcome to original nodes.
 
 \medskip 
 
-After obtaining the cluster graph, we determine the $2$ critical sequences as $S \rightarrow C2 \rightarrow C4$ and $S \rightarrow C6$. 
+After obtaining the cluster graph, we determine the $2$ critical sequences as $S \rightarrow C2 \rightarrow C3$ and $S \rightarrow C6$. 
 So, using the payment formula of GIDM, 
 \\
 \textbf{Payment:} For all $i$,
@@ -527,8 +532,8 @@ So, using the payment formula of GIDM,
 0 & \text{otherwise.}
 \end{cases}
 \]
-We get the following cluster-level payments: $C2$ gets $4$, $C4$ pays $7$, and $C6$ pays $7$.
-We finally allocate the item to the highest bidder in each winning cluster, so $H$ gets the item in $C4$ and $Y$ gets the item in $C6$ and do the cluster payments respectively.
+We get the following cluster-level payments: $C2$ gets $4$, $C3$ pays $7$, and $C6$ pays $7$.
+We finally allocate the item to the highest bidder in each winning cluster, so $H$ gets the item in $C3$ and $Y$ gets the item in $C6$ and do the cluster payments respectively.
 The root agent $B$ in $C2$ receives the intermediary reward of $4$, all other nodes get zero reward or payment.
 
 
@@ -604,7 +609,7 @@ Thus assigning intermediary rewards to cluster roots is weakly incentive compati
 \end{proof}
 
 \section{Conclusions}
-The three baseline papers suggest a natural progression: IDM explains truthful diffusion for one item, GIDM extends it to multiple homogeneous items, and SCM shows that false identities fundamentally matter. Our report contributes a bridge between the latter two directions. We formalize SC-GIDM, explain why ordinary GIDM is Sybil-vulnerable, and prove that under a non-colluding type-preserving split model the macro instance built by SC-GIDM is invariant to a split attack. This yields a clean Sybil-proofness theorem and an inheritance theorem from GIDM. The main limitation, and therefore the clearest future work, is to go beyond this restricted attack model and to analyze what happens when fake identities can alter aggregate cluster bids or when multiple real buyers collude.
+The three baseline papers suggest a natural progression: IDM explains truthful diffusion for one item, GIDM extends it to multiple homogeneous items, and SCM shows that false identities fundamentally matter. Our report contributes a bridge between the latter two directions. We formalize SC-GIDM, explain why ordinary GIDM is Sybil-vulnerable, and prove that under a non-colluding type-preserving split model the macro instance built by SC-GIDM is invariant to a split attack. This yields a clean Sybil-proofness theorem and an inheritance theorem from GIDM. The main limitation, and therefore the clearest future work, is to go beyond this restricted attack model and to analyze what happens when multiple real buyers collude and also find a better way of distributing intermediary rewards inside a winning cluster.
 
 \appendix
 
@@ -692,7 +697,7 @@ Overall, the current simulator seems to capture a weaker phenomenon: attacked GI
 
 \balance
 \bibliographystyle{ACM-Reference-Format}
-\bibliography{sample}
+\bibliography{references}
 
 
 \end{document}
