@@ -5,11 +5,6 @@ presentation/*
 !presentation/poly.sty
 !presentation/xgames.sty
 
-*/report/*
-!*/report/report.tex
-report/*
-!report/report.tex
-
 finalReport/*
 !finalReport/sample.tex
 !finalReport/aamas.cls
