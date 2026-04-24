@@ -12,7 +12,7 @@
 \usepackage{framed}
 \usetikzlibrary{arrows.meta,positioning,calc,fit,backgrounds}
 
-\setcopyright{ifaamas}
+\setcopyright{none}
 \acmConference{CS6002: Course Project}{Spring 2026}{IIT Bombay, India}
 
 \acmYear{2026}
@@ -104,6 +104,8 @@ Our project addresses this open direction. Since the final deliverable is not me
 \url{https://github.com/abhijain565aj/Incentive-Compatible-Referral-Auctions-on-Networks.git}
 \end{center}
 
+Alongside the theoretical part of the project, we also developed an exploratory implementation and simulator in our project repository. As we are not yet fully confident that this code faithfully reproduces the exact paper-level multi-item GIDM mechanism, we do not rely on these experiments in the main text; instead, we summarize the implementation effort, exploratory observations, and limitations in Appendix~\ref{app:simulation}.
+
 \subsection{Contributions}
 Our report makes the following contributions.
 \begin{itemize}[leftmargin=1.5em]
@@ -161,7 +163,7 @@ GIDM generalizes IDM to $K$ homogeneous items \cite{ZhaoLXHJ18}. It does \emph{n
 The full GIDM pseudocode is fairly long, so we place it in Appendix~\ref{app:gidm}. SC-GIDM uses that GIDM allocation/payment logic on a cluster graph rather than on the original reported identity graph.
 
 \section{GIDM Sybil Vulnerability}
-We now isolate the specific reason why ordinary GIDM is vulnerable. In the truthful instance (\ref{fig:gidmattack}), buyer $C$ is an intermediary and receives reward $1$ (equivalently payment $-1$). In the attacked instance (\ref{fig:gidmattack}), the same buyer creates a fake child $C'$ with bid $18.9$. This Sybil does not add new real value, but it changes the counterfactual welfare benchmark used in GIDM's payment formula. As a result, the attacker's reward increases from $1$ to $2.9$.
+We now isolate the specific reason why ordinary GIDM is vulnerable. In the truthful instance (\ref{fig:gidmattack}), we run GIDM for 2 homogeneous items. Buyer $C$ is an intermediary and receives reward $1$ (equivalently payment $-1$). In the attacked instance (\ref{fig:gidmattack}), the same buyer creates a fake child $C'$ with bid $18.9$. This Sybil does not add new real value, but it changes the counterfactual welfare benchmark used in GIDM's payment formula. As a result, the attacker's reward increases from $1$ to $2.9$.
 
 \begin{figure*}[t]
 \centering
@@ -390,7 +392,12 @@ The item and the intermediary reward are separated inside a cluster. If the clus
 \end{remark}
 
 \subsection{Running SC-GIDM on the attacked graph}
-We now revisit the earlier GIDM example through the lens of SC-GIDM. Rather than analyzing only the local neighborhood around $C$, we use the full graph so that the clustering and pruning steps can be seen explicitly. The mechanism proceeds in three conceptual stages. First, the reported graph is partitioned into dominator clusters. Second, these clusters define a cluster graph, from which a spanning tree is sampled in the SCM spirit. Third, GIDM is run only on the critical chains of this pruned cluster tree. The figures below are intentionally presented as a running example rather than a proof gadget; their purpose is to show how the attack surface disappears before any payment is computed.
+We run our SC-GIDM mechanism on the same Sybil-attacked instance of Figure~\ref{fig:gidmattack} for 2 homogeneous items. First, we compute the dominator tree, resulting clusters and the cluster graph ($T_H$) (see Figure~\ref{fig:scgidmstepsone}). 
+Then, we run GIDM on $T_H$ which gives the critical cluster sequences (see Figure~\ref{fig:scgidmstepstwo}). 
+Using GIDM payment and allocation rules from Appendix~\ref{app:gidm}, we compute the cluster-level payments and allocations. 
+Finally, we lift the cluster-level outcome to original nodes.
+
+
 
 \begin{figure*}[t]
 \centering
@@ -430,15 +437,15 @@ We now revisit the earlier GIDM example through the lens of SC-GIDM. Rather than
     \draw[arrow] (I)--(M); \draw[arrow] (K)--(Y);
     \draw[arrow] (M)--(O); \draw[arrow] (Y)--(P); \draw[arrow] (Y)--(Q); \draw[arrow] (P)--(Q);
 
-    \node[font=\tiny] at (-2.3, 4.8) {A}; \node[font=\tiny] at (-0.7, 4.8) {B};
-    \node[font=\tiny] at (0.3, 4.8) {U}; \node[font=\tiny] at (0.3, 3.8) {V};
-    \node[font=\tiny] at (2.4, 5.0) {C}; \node[font=\tiny] at (1.4, 6.0) {Z};
-    \node[font=\tiny] at (-1.4, 4.0) {D}; \node[font=\tiny] at (1.35, 4.0) {E};
-    \node[font=\tiny] at (2.85, 4.0) {F}; \node[font=\tiny] at (4.25, 3.80) {G};
-    \node[font=\tiny] at (-2.30, 2.8) {H}; \node[font=\tiny] at (-1.35, 2.8) {I};
-    \node[font=\tiny] at (0.25, 2.8) {J}; \node[font=\tiny] at (2.1, 3) {K};
-    \node[font=\tiny] at (-1.35, 2) {M}; \node[font=\tiny] at (2.1, 2) {Y};
-    \node[font=\tiny] at (-1.35, 1) {O}; \node[font=\tiny] at (0.85, 1) {P};
+    \node[font=\tiny] at (-2.3, 4.6) {A}; \node[font=\tiny] at (-0.9, 4.8) {B};
+    \node[font=\tiny] at (-0, 4.8) {U}; \node[font=\tiny] at (0.3, 3.6) {V};
+    \node[font=\tiny] at (2.5, 5.0) {C}; \node[font=\tiny] at (1.5, 6.0) {Z};
+    \node[font=\tiny] at (-1.5, 4.0) {D}; \node[font=\tiny] at (1.45, 4.0) {E};
+    \node[font=\tiny] at (2.95, 4.0) {F}; \node[font=\tiny] at (4.25, 3.60) {G};
+    \node[font=\tiny] at (-2.30, 2.6) {H}; \node[font=\tiny] at (-1.35, 2.6) {I};
+    \node[font=\tiny] at (0.25, 2.6) {J}; \node[font=\tiny] at (2.2, 3) {K};
+    \node[font=\tiny] at (-1.5, 2) {M}; \node[font=\tiny] at (2.2, 2) {Y};
+    \node[font=\tiny] at (-1.5, 1) {O}; \node[font=\tiny] at (0.75, 1) {P};
     \node[font=\tiny] at (2.70, 1) {Q};
     \begin{scope}[on background layer]
         \node[cluster, fit=(D) (H) (I) (J) (M) (O)] {};
@@ -459,8 +466,8 @@ We now revisit the earlier GIDM example through the lens of SC-GIDM. Rather than
     \node[smallbuyer] (A) at (-2, 5.0) {7};
     \node[smallbuyer] (B) at (0, 5.0) {4};
     \node[smallbuyer] (H) at (-2, 3) {19};
-    \node[smallbuyer] (U) at (-1, 3) {19};
-    \node[smallbuyer] (V) at (0, 3) {19};
+    \node[smallbuyer] (U) at (-1, 3) {11};
+    \node[smallbuyer] (V) at (0, 3) {12};
     \node[smallbuyer] (Y) at (1.75, 2) {20};
 
     \draw[arrow] (S)--(A);
@@ -469,12 +476,12 @@ We now revisit the earlier GIDM example through the lens of SC-GIDM. Rather than
     \draw[arrow] (B)--(H);
     \draw[arrow] (B)--(U);
     \draw[arrow] (B)--(V);
-    \node[font=\tiny] at (-1.7, 4.8) {C1};
-    \node[font=\tiny] at (0.3, 4.8) {C2};
-    \node[font=\tiny] at (-2.30, 2.8) {C3};
-    \node[font=\tiny] at (-1.30, 2.8) {C4};
-    \node[font=\tiny] at (-0.30, 2.8) {C5};
-    \node[font=\tiny] at (2.1, 2) {C6};
+    \node[font=\tiny] at (-1.6, 4.7) {C1};
+    \node[font=\tiny] at (0.4, 4.7) {C2};
+    \node[font=\tiny] at (-2.40, 2.7) {C3};
+    \node[font=\tiny] at (-1.40, 2.7) {C4};
+    \node[font=\tiny] at (-0.40, 2.7) {C5};
+    \node[font=\tiny] at (2.3, 2) {C6};
 \end{tikzpicture}
 
 \small Step 2: cluster tree sampled from the cluster graph
@@ -505,17 +512,32 @@ We now revisit the earlier GIDM example through the lens of SC-GIDM. Rather than
 \end{minipage}\hfill
 \begin{minipage}[t]{0.54\textwidth}
 \small
-\textbf{Placeholder explanation of the run.} In the sampled tree, the seller's items are routed only through the surviving macro-critical chains. Here one winning chain terminates at cluster $C_3$ (containing the high-valued subtree rooted at $D$) and the other at $C_6$ (containing the high-valued subtree rooted at $C/F/K/Y$). Cluster $C_2$ becomes the unique intermediary on one critical path, so any intermediary reward is attached to $C_2$ as a cluster-level role rather than to individual fake identities hidden inside it.
+\textbf{Explanation of the run.} 
 
-\medskip
-When this macro outcome is lifted back to the identity graph, the physical items are given to the highest-bid representatives of the winning clusters, while any intermediary reward remains attached to the designated root of the intermediary cluster. This is exactly the structural reason the split attack loses its effect under SC-GIDM: adding more internal fake nodes does not create additional macro positions, additional macro winners, or additional reward-bearing intermediaries.
+\medskip 
+
+After obtaining the cluster graph, we determine the $2$ critical sequences as $S \rightarrow C2 \rightarrow C4$ and $S \rightarrow C6$. 
+So, using the payment formula of GIDM, 
+\\
+\textbf{Payment:} For all $i$,
+\[
+\begin{cases}
+\SW_{-D_i} - (\SW_{-\mathcal{C}_i^{K}} - v_i^\prime) & \text{if } i\in W,\\
+\SW_{-D_i} - \SW_{-\mathcal{C}_i^{K}} & \text{if } i\in \bigcup_{j\in W}\mathcal{P}_j(\theta^\prime)\setminus W,\\
+0 & \text{otherwise.}
+\end{cases}
+\]
+We get the following cluster-level payments: $C2$ gets $4$, $C4$ pays $7$, and $C6$ pays $7$.
+We finally allocate the item to the highest bidder in each winning cluster, so $H$ gets the item in $C4$ and $Y$ gets the item in $C6$ and do the cluster payments respectively.
+The root agent $B$ in $C2$ receives the intermediary reward of $4$, all other nodes get zero reward or payment.
+
+
 \end{minipage}
 \caption{Final macro-level view of the running example. The SC-GIDM computation only depends on the pruned cluster tree and the aggregate cluster bids, so internal fake nodes no longer change reward-bearing graph structure.}
 \label{fig:scgidmstepstwo}
 \end{figure*}
 
-The key point is that after clustering and tree sampling, the mechanism reasons only about the macro nodes $C_1,\dots,C_6$. Internal fake descendants disappear into their containing cluster before any GIDM payment term is evaluated. Thus the internal split changes neither the macro topology nor the set of reward-bearing macro positions. The macro transfer attached to an intermediary cluster is determined only by the cluster tree and the cluster bids, not by the number of internal fake nodes.
-
+As we can see in Figure~\ref{fig:scgidmstepstwo}, the fake node $C'$ is now clustered together with $C$ and does not create a new cluster or a new critical chain. The cluster representative value $\widehat b_{C}$ remains $2$, so the reward of $C$ remains $1$ and does not increase to $2.9$. This illustrates the robustness of SC-GIDM against the sybil attack.
 \section{Main Results}
 We first show that a buyer's split identities remain confined inside a single cluster.
 
@@ -584,16 +606,12 @@ Thus assigning intermediary rewards to cluster roots is weakly incentive compati
 \section{Conclusions}
 The three baseline papers suggest a natural progression: IDM explains truthful diffusion for one item, GIDM extends it to multiple homogeneous items, and SCM shows that false identities fundamentally matter. Our report contributes a bridge between the latter two directions. We formalize SC-GIDM, explain why ordinary GIDM is Sybil-vulnerable, and prove that under a non-colluding type-preserving split model the macro instance built by SC-GIDM is invariant to a split attack. This yields a clean Sybil-proofness theorem and an inheritance theorem from GIDM. The main limitation, and therefore the clearest future work, is to go beyond this restricted attack model and to analyze what happens when fake identities can alter aggregate cluster bids or when multiple real buyers collude.
 
-\balance
-\bibliographystyle{ACM-Reference-Format}
-\bibliography{sample}
-
 \appendix
 
 \section{Appendix: GIDM Pseudocode}
 \label{app:gidm}
 The following is the macro-level GIDM routine used inside SC-GIDM, adapted directly from Zhao et al.\ \cite{ZhaoLXHJ18}. We include it here because SC-GIDM in Section~5 invokes GIDM as a subroutine.
-
+The terminology and notation are consistent with the main text
 \begin{framed}
 \noindent\textbf{Generalized Information Diffusion Mechanism (GIDM)}\\
 \rule{\linewidth}{0.5pt}
@@ -649,5 +667,32 @@ E(H)=\{(x,y)\mid \exists i\in K_x,\ \exists j\in K_y \text{ such that } (i,j)\in
 \item Run STM on the modified input $(\widehat G,\Gamma(\theta'))$ instead of on the original graph.
 \end{enumerate}
 % \end{framed}
+
+\section{Exploratory Simulation Note}
+\label{app:simulation}
+
+As part of the project, we also implemented an experimental simulator in our GitHub repository (temporary link to be added). The code was developed as an implementation-oriented companion to the theory part of the project, with LLM support used for implementation and debugging assistance.
+
+We do not include these experiments in the main body of the report because we are not sufficiently confident that the simulator faithfully implements the exact mechanisms from the papers, especially the full multi-item payment structure of GIDM. In particular, paper-level GIDM depends on an optimal allocation tree, DFS/LIFO routing, item displacement, and welfare-counterfactual payments, all of which are subtle to reproduce exactly. Hence, we treat the current code only as an exploratory proof-of-concept.
+
+The qualitative pattern we expected was:
+\begin{enumerate}
+    \item attacked GIDM should sometimes increase the attacker's utility or reward,
+    \item attacked GIDM may produce fake winners and lower real welfare,
+    \item SC-GIDM should suppress fake winners and reduce such manipulation.
+\end{enumerate}
+
+The current output provides only partial support for this story. On the supportive side, there are instances where attacked GIDM produces fake winners and lower real welfare, while SC-GIDM preserves the no-attack outcome. This is consistent with the intended role of clustering.
+
+However, the contradicting evidence is equally important. In many seeds, both GIDM and SC-GIDM remain numerically identical as the attack budget increases, and the simulator does not yet show meaningful positive attacker reward gain or fake reward mass in a convincing way. This is a warning sign, because the motivating Sybil examples rely precisely on manipulation of the payment/reward structure.
+
+Therefore, we deliberately exclude the simulation study from the main body of the report. At present, we regard the code as useful for qualitative debugging and exploratory validation, but not yet reliable enough to serve as faithful experimental evidence for the exact paper mechanisms.
+
+Overall, the current simulator seems to capture a weaker phenomenon: attacked GIDM can sometimes create fake winners and reduce real welfare, and SC-GIDM may remove that effect. But it does not yet convincingly reproduce the stronger Sybil-payment phenomenon that motivates our theoretical extension. A more faithful future implementation would need to reproduce the exact multi-item GIDM allocation and payment rules before these experiments could be promoted beyond exploratory appendix material.
+
+\balance
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{sample}
+
 
 \end{document}
